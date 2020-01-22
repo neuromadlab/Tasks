@@ -1,105 +1,121 @@
 %%===================Effort allocation task===================
 % Main script for Effort cost paradigm 
 %
-% author: Monja P. Neuser, Vanessa Teckentrup, Nils B. Kroemer
-% adaptations and integratoion: Mechteld van den Hoek Ostende, Emily Corwin-Renner 
+% author: Monja P. Neuser, Mechteld van den Hoek Ostende, Vanessa Teckentrup, Nils B. Kroemer
+% Integration WOF: Emily Corwin-Renner 
 %
 % Input: fiber optic response grip force device or Xbox360 controller, 
 %        computer mouse for non-mri settings
 %
 subj.version = 2.0;          % Script version: "at the zoo"
 %=============================================================
-%% Preparation
+%% Part 0: Preparation
 
 % Clear workspace
 close all;
 clear all; 
 sca;
 
-%% Part 1: settings and study information
-
-% settings
-settings.do_fullscreen = 1;  % default second monitor, if connected
-settings.do_fmri       = 0;  % will include trigger
-settings.debug         = 0;  % input device not required
-settings.do_gamepad    = 0;  % frequency
-settings.do_WOF        = 1;  % include wheel of fortune
-settings.do_VAS        = 1;  % include VAS
-settings.do_val_cal    = 0;  % calibrate value difference between food/money
-settings.do_timelimit  = 1;  % time limit for intermittent VAS questions
-settings.lang_de       = 1;  % german. English when 0
-settings.do_feedback   = 1;  % feedback on (1) or off (0)
-settings.train_trials  = 3;  % amount of training trials to estimate max/min (2 or 3)
-
-% Study information
-subj.study             = 'TUE003';  % Project number
-subj.runID             = '1';  % Runs per session   
-
-% Settings VAS
-if settings.do_VAS == 1
-    settings.VAS_input      = 0; % VAS input is 1 for joystick, 0 for mouse
-    settings.VAS.exhaustion = 1;
-    settings.VAS.wanting    = 1;
-    settings.VAS.happy1     = 1;
-    settings.VAS.happy2     = 1;
-end
-
-settings.value_money   = 17;  % amount of cents earned with 100 points
-settings.value_food    = 17;  % amount of kcal earned with 100 points
-settings.clckforce     = 20000;
+%% Part 1/2: settings and study information
+% load settings .mat file
+load('tVNSSettings.mat')
 
 % load instructions
 if settings.lang_de == 1
-    WOFGerman
+    tVNSGerman
 else
     sprintf('English not implemented yet');
 end
 
-%% Part 2: task timings
-
-% Durations of  
-if settings.do_fmri == 0
-    timings.trial_length        = 2; 
-    timings.break_length        = 2; 
-    timings.feedback_length     = 2.5;
-    timings.fix1_length         = 1;
-    timings.fix2_length         = 1.5;
-    timings.bidding_length      = 5;
-    timings.VAS_rating_duration = 1;
-    timings.number_breaks       = 3;
-    timings.number_trials       = 72;
-elseif settings.do_fmri == 1
-    timings.trial_length        = 4;
-    timings.break_length        = 2;
-    timings.feedback_length     = 2.5;
-    timings.fix1_length         = 1;
-    timings.fix2_length         = 1.5;
-    timings.number_breaks       = 2;
-    timings.number_trials       = 64;
-    %MR specific timings
-    MR_timings.durations.effort     = timings.trial_length;
-    MR_timings.durations.feedback   = timings.feedback_length;
-    MR_timings.durations.win        = [];
-    MR_timings.durations.rest_phase = [];
-end
-
-% determine before what trial breaks should be inserted
-timings.break_trials = [];
-for brk = 1:timings.number_breaks   
-   breaknumbr           = timings.number_trials/(timings.number_breaks + 1)* brk;
-   timings.break_trials = [timings.break_trials, round(breaknumbr)];
-end
-timings.break_trials = timings.break_trials + 1;
-
-
-if settings.do_WOF == 1
-    timings.nmbr_trls_to_WOF    = 6;
-    timings.time_to_start       = 1; %Time to spin WOF from button press
-    timings.show_wheel          = 5;
-    timings.show_feedback       = 5;
-    timings.PANAS_trials        = timings.break_trials - 1;   
-    timings.PANAS_trials        = [timings.PANAS_trials, timings.number_trials];
-end
+% % settings
+% settings.do_fullscreen = 1;  % default second monitor, if connected
+% settings.do_fmri       = 0;  % will include trigger
+% settings.debug         = 0;  % input device not required
+% settings.do_gamepad    = 1;  % frequency
+% settings.do_WOF        = 0;  % include wheel of fortune
+% settings.do_VAS        = 1;  % include VAS
+% settings.do_val_cal    = 1;  % calibrate value difference between food/money
+% settings.use_val_cal   = 0;  % use calibrated value difference for food/money (txt file in data folder)
+% settings.do_timelimit  = 1;  % time limit for intermittent VAS questions
+% settings.lang_de       = 1;  % german. English when 0
+% settings.do_feedback   = 0;  % feedback on (1) or off (0)
+% settings.train_trials  = 2;  % amount of training trials to estimate max/min (2 or 3)
+% 
+% % Study information
+% subj.study             = 'TUE004';  % Project number
+% subj.runID             = '1';  % Runs per session   
+% 
+% % Settings VAS
+% if settings.do_VAS == 1
+%     settings.VAS_input      = 1; % VAS input is 1 for joystick, 0 for mouse
+%     settings.VAS.exhaustion = 1;
+%     settings.VAS.wanting    = 1;
+%     settings.VAS.happy1     = 0;
+%     settings.VAS.happy2     = 0;
+% end
+% 
+% settings.value_money   = 32;    % amount of cents earned with 100 points
+% settings.value_food    = 32;    % amount of kcal earned with 100 points
+% settings.clckforce     = 20000; % only relevant for grip force device set-ups
+%     
+% 
+% %% Part 2: task timings
+% 
+% % Durations of  
+% if settings.do_fmri == 0
+%     timings.trial_length        = 30; 
+%     timings.break_length        = 15; 
+%     timings.feedback_length     = 2.5;
+%     timings.fix1_length         = 0;
+%     timings.fix2_length         = 1.5;
+%     timings.bidding_length      = 5;
+%     timings.VAS_rating_duration = 3.2;
+%     timings.number_breaks       = 2;
+%     timings.number_trials       = 64;
+%     timings.avrg_jttr_ball      = '2';
+%     timings.avrg_jttr_fix1      = '2';
+%     timings.avrg_jttr_fix2      = '2';
+%     timings.max_jttr_ball       = '4';
+%     timings.max_jttr_fix1       = '12';
+%     timings.max_jttr_fix2       = '12';
+% elseif settings.do_fmri == 1
+%     timings.trial_length        = 22;
+%     timings.break_length        = 10;
+%     timings.feedback_length     = 2.5;
+%     timings.fix1_length         = 0.5;
+%     timings.fix2_length         = 1;
+%     timings.number_breaks       = 2;
+%     timings.number_trials       = 64;
+%     timings.avrg_jttr_ball      = '1';
+%     timings.avrg_jttr_fix1      = '1.5';
+%     timings.avrg_jttr_fix2      = '3';
+%     timings.max_jttr_ball       = '4';
+%     timings.max_jttr_fix1       = '12';
+%     timings.max_jttr_fix2       = '12';
+%     %MR specific timings
+%     MR_timings.durations.effort     = timings.trial_length;
+%     MR_timings.durations.feedback   = timings.feedback_length;
+%     MR_timings.durations.win        = [];
+%     MR_timings.durations.rest_phase = [];
+% end
+% 
+% % determine before what trial breaks should be inserted
+% timings.break_trials = [];
+% for brk = 1:timings.number_breaks   
+%    breaknumbr           = timings.number_trials/(timings.number_breaks + 1)* brk;
+%    timings.break_trials = [timings.break_trials, round(breaknumbr)];
+% end
+% timings.break_trials = timings.break_trials + 1;
+% 
+% 
+% if settings.do_WOF == 1
+%     timings.nmbr_trls_to_WOF    = 6;
+%     timings.time_to_start       = 1; %Time to spin WOF from button press
+%     timings.show_wheel          = 5;
+%     timings.show_feedback       = 5;
+%     timings.PANAS_trials        = timings.break_trials - 1;   
+%     timings.PANAS_trials        = [timings.PANAS_trials, timings.number_trials];
+% end
 %% Part 3: Input from console
 
 % Console input: entrered by experimenter when experiment starts
@@ -130,12 +146,44 @@ windows         = system_info.windows;
 mac             = system_info.osx;
 linux           = system_info.linux;
 
-% Session # from which the maxEffort is loaded 
-subj.load_maxeff       = '1'; 
+if linux
+    [grip_force_idx,grip_force_axis] = Initialize_CD_GripForce_linux;
+elseif mac
+    [grip_force_idx,grip_force_axis] = Initialize_CD_GripForce_mac;
+elseif windows && settings.do_fmri == 1
+    hndl_found = 0;
+    GripForceSpec.Handle = 0;
+    while hndl_found == 0
+       hndl_found = 1;
+       try
+          [Joystick.X, Joystick.Y, Joystick.Z, Joystick.Button] = WinJoystickMex(GripForceSpec.Handle); 
+       catch
+           GripForceSpec.Handle = GripForceSpec.Handle + 1;
+           hndl_found = 0;
+       end
+    end
+end
+
+% file name for saving bidding factor
+value_file_name           = sprintf('value_factor_%s', subj.subjectID);
+
+% check if correct value file is present for MR
+if settings.use_val_cal == 1
+    if exist(fullfile('data', [value_file_name '.txt'])) ~= 2
+       
+        error('Error: Value file is missing. Add txt file to /data folder.')
+       
+    else
+        input_device.value_factor = dlmread(fullfile('data', [value_file_name '.txt']));
+        input_device.value_money  = settings.value_money;
+        input_device.value_food   = round(input_device.value_money * input_device.value_factor);
+        
+    end
+end
 
 HideCursor;
 
-%% fmri settings
+%% Part 4: fMRI settings
 
 %KbName('UnifyKeyNames');
 Screen('Preference','TextEncodingLocale');
@@ -160,13 +208,13 @@ else
     flp_flg_vrt = 0;
 end
 
-%% Part 4 Load required files
+%% Part 5: Load required files
 
 %%% Load Conditions
 
 % Prepare loading max Effort
 maxeffort_searchname = [[pwd filesep 'data' filesep 'TrainEAT_' ...
-                        subj.study '_'  subj.subjectID '_S' subj.load_maxeff] '*'];
+                        subj.study '_'  subj.subjectID '_S' subj.sessionID] '*'];
 maxeffort_searchname = dir(maxeffort_searchname);
 
 % File names
@@ -217,15 +265,15 @@ end
 %%% load jitters
 if linux
     
-    ball_jitter_filename = sprintf('%s/jitters/DelayJitter_mu_1_max_4_trials_%s.mat', pwd, num2str(timings.number_trials));
-    fix1_jitter_filename = sprintf('%s/jitters/DelayJitter_mu_2_max_12_trials_%s.mat', pwd, num2str(timings.number_trials));
-    fix2_jitter_filename = sprintf('%s/jitters/DelayJitter_mu_3_max_12_trials_%s.mat', pwd, num2str(timings.number_trials));
+    ball_jitter_filename = sprintf('%s/jitters/DelayJitter_mu_%s_max_%s_trials_%s.mat', pwd, timings.avrg_jttr_ball, timings.max_jttr_ball, num2str(timings.number_trials));
+    fix1_jitter_filename = sprintf('%s/jitters/DelayJitter_mu_%s_max_%s_trials_%s.mat', pwd, timings.avrg_jttr_fix1, timings.max_jttr_fix1, num2str(timings.number_trials));
+    fix2_jitter_filename = sprintf('%s/jitters/DelayJitter_mu_%s_max_%s_trials_%s.mat', pwd, timings.avrg_jttr_fix2, timings.max_jttr_fix1, num2str(timings.number_trials));
  
 elseif windows
     
-    ball_jitter_filename = sprintf('%s\\jitters\\DelayJitter_mu_1_max_4_trials_%s.mat', pwd, num2str(timings.number_trials));
-    fix1_jitter_filename = sprintf('%s\\jitters\\DelayJitter_mu_2_max_12_trials_%s.mat', pwd, num2str(timings.number_trials));
-    fix2_jitter_filename = sprintf('%s\\jitters\\DelayJitter_mu_3_max_12_trials_%s.mat', pwd, num2str(timings.number_trials));
+    ball_jitter_filename = sprintf('%s\\jitters\\DelayJitter_mu_%s_max_%s_trials_%s.mat', pwd, timings.avrg_jttr_ball, timings.max_jttr_ball, num2str(timings.number_trials));
+    fix1_jitter_filename = sprintf('%s\\jitters\\DelayJitter_mu_%s_max_%s_trials_%s.mat', pwd, timings.avrg_jttr_fix1, timings.max_jttr_fix1, num2str(timings.number_trials));
+    fix2_jitter_filename = sprintf('%s\\jitters\\DelayJitter_mu_%s_max_%s_trials_%s.mat', pwd, timings.avrg_jttr_fix2, timings.max_jttr_fix1, num2str(timings.number_trials));
     
 end
 
@@ -275,7 +323,7 @@ end
 % Create time stamp
 timestamps.seed = rng;
 
-%% Part 5: Psychtoolbox and screen
+%% Part 6: Psychtoolbox and screen
 
 PsychDefaultSetup(1); %unifies key names on all operating systems
 
@@ -335,7 +383,7 @@ KbQueueFlush();
 KbQueueStart();
 [b,c] = KbQueueCheck;
 
-%% Part 6: 
+%% Part 7: general image settings
 
 % Prepare incentive textures
 stim.incentive_coins1       = Screen('MakeTexture', w, img.incentive_coins1);
@@ -389,7 +437,7 @@ Coin.loc                    = [Coin.LeftImg Coin.TopImg Coin.RightImg Coin.Botto
 % Text parameters
 Text.height                 = setup.ScrHeight/5;
 Text.height_cont            = Text.height * 4.7;
-%% Part 7: WOF specific settings
+%% Part 8: WOF specific settings
 
 if settings.do_WOF == 1
     %add paths
@@ -404,11 +452,29 @@ if settings.do_WOF == 1
     %versions a and b have different versions of the random walk of wins
     %accross trials
     version                    = sprintf(subj.order);
+    
+    %reseed random number generator (important for random selection of
+    %variation of the sequence version (version +/-1)
+    rng('shuffle');
 
+    %determines base win/loss values
+    if version == 'a'
+        output.wof.base_win_amnt = wof_data_sel(2:15,18);
+    elseif version == 'b'
+        output.wof.base_win_amnt = wof_data_sel(2:15,19);
+    end
+    
+    %determines final win/loss values including adding sequence with +/-1s
+    %to get slight variation between versions of same sequence presented
+    wof_colvals = 20:29;
+    wof_colsel = randsample(wof_colvals,1)
+    output.wof.win_amnt = output.wof.base_win_amnt + wof_data_sel(2:15,wof_colsel);
+    
+        
     %creates matrix to store exact win/loss values
     output.wof.wof_outcomes    = zeros(14,3);       
-    output.wof.win_amnt_a      = wof_data_sel(2:15,18);
-    output.wof.win_amnt_b      = wof_data_sel(2:15,19);
+%     output.wof.win_amnt_a      = wof_data_sel(2:15,18);
+%     output.wof.win_amnt_b      = wof_data_sel(2:15,19);
     count_PANAS                = 1;
 
     %timings
@@ -476,7 +542,7 @@ if settings.do_WOF == 1
     
 end
 
-%% Part 8: VAS specific settings
+%% Part 9: VAS specific settings
 
 if settings.do_VAS == 1
     %  Load VAS-jitters
@@ -506,11 +572,9 @@ if settings.do_VAS == 1
     
 end
 
-%% Training
+%% Part 10: Training
 
 if strcmp(subj.runLABEL, 'training')
-    % file name for saving bidding factor
-    value_file_name           = sprintf('value_factor_%s', subj.subjectID);
     
     if settings.do_fmri == 0
         % load welcome instructions
@@ -526,7 +590,7 @@ if strcmp(subj.runLABEL, 'training')
     TrainEAT_main
 end
 
-%% Part 9: Input device unrelated values
+%% Part 11: Input device unrelated values
 
 % Initialise vectors and counting variables
 i_break         = 0;  
@@ -554,8 +618,9 @@ output.payout_per_trial = 0;
 % vector storing effort measure
 effort_vector   = [nan]; %stores effort value 
 
-%% Part 10: Input device dependent values
+%% Part 12: Input device dependent values
 
+%%% 12.1: frequency
 if settings.do_gamepad == 1 % if frEAT
     load('JoystickSpecification.mat')
     % initialize frequency specific values
@@ -601,7 +666,7 @@ if settings.do_gamepad == 1 % if frEAT
     LwrBndUncertain  = Tube.YBottom - EffortLow * draw_frequency_factor;
     UpprBndUncertain = Tube.YBottom - EffortHigh * draw_frequency_factor;
     
-    
+%%% 12.2: grip force    
 else % grip force device (EAT)
     % initialize grip force device
     load('GripForceSpec.mat')
@@ -646,12 +711,12 @@ else % grip force device (EAT)
     
 end
 
-%% Uncertainty
+%% Part 13: Uncertainty
 
 %drawing parameters for uncertainty
 box.position        = [Tube.XCor1, UpprBndUncertain, Tube.XCor2, LwrBndUncertain];
 
-%% Text instructions
+%% Part 14: Text instructions
 
 Screen('TextSize',w,32);
 Screen('TextFont',w,'Arial');
@@ -786,7 +851,7 @@ elseif ~strcmp(subj.runLABEL, 'training')
     end
 end
 
-%% Part 11: Start fMRI procedure
+%% Part 15: Start fMRI procedure
 %Listen for triggers
 if (settings.do_fmri == 1)  && ~strcmp(subj.runLABEL, 'training')
     
@@ -819,11 +884,11 @@ end
 KbQueueFlush();
 timestamps.exp_on = GetSecs;
 
-%% Part 13: The actual task
+%% Part 16: The actual task
 
 %  Loop while entries in the conditions file left
 for i_trial = 1:length(conditions) %condition file determines repetitions
-    %% 13.1 Break
+    %% 16.01 Break
         
     if i_trial == timings.break_trials(count_breaks)
          if count_breaks < timings.number_breaks
@@ -884,7 +949,7 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
         
     end
     
-    %% 13.whoiscounting
+    %% 16.02
     
     if settings.do_WOF == 1
         if ~strcmp(subj.runLABEL, 'training')
@@ -900,7 +965,7 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
         end
     end
     
-    %% 13.2 Update trial settings before trial start
+    %% 16.03 Update trial settings before trial start
 
     input_device.incentive      = conditions(i_trial, 2); % 1 = Money, 0 = Food
     input_device.value          = conditions(i_trial, 3); % 1 or 10
@@ -952,7 +1017,7 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
     IncCounter = [(XCorCounter - SizeCounterDim1) (YCorCounter - SizeCounterDim2) XCorCounter YCorCounter]; 
 
     
-    %% 13.3 Show incentive before difficulty
+    %% 16.04 Show incentive before difficulty
     % Show reward type before start of effort input
     Screen('DrawTexture', w, incentive,[], Coin.loc); 
     
@@ -980,7 +1045,7 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
 
     MR_timings.durations.condition_preview_reward(i_trial,1) = 1 + ball_jitter(i_trial,1);
     
-    %% 13.4 Add difficulty
+    %% 16.05 Add difficulty
     % Draw Incentive 
     Screen('DrawTexture', w, incentive,[], Coin.loc); 
     % Incentive on effort screen
@@ -1001,13 +1066,13 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
     end 
 
     
-    %% 13.5 Actual trial start
+    %% 16.06 Actual trial start
     t_trial_onset = GetSecs;
     t_buttonN_1   = t_trial_onset;
     onset_start   = 0; %flag for MR_onset
     
     while (timings.trial_length > (GetSecs - t_trial_onset))
-    %% 13.5.1 Draw graphical display
+    %% 16.06.1 Draw graphical display
 
       % Draw Tube
         Screen('DrawLine',effort_scr,color.black,Tube.XCor1, Tube.height, Tube.XCor1, Tube.YBottom ,6);
@@ -1044,7 +1109,7 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
         end
       end
       
-      %% 13.5.2 grEAT specific ball settings
+      %% 16.06.2 grEAT specific ball settings
       if settings.do_gamepad == 0
         % Track Ball position and translate into payout
          Ball.DrawFactor = 0;
@@ -1054,7 +1119,7 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
          else
              Ball_yposition = Tube.YBottom;              
          end
-      %% 13.5.3 frEAT specific ball settings
+      %% 16.06.3 frEAT specific ball settings
       elseif settings.do_gamepad == 1
           Ball.DrawFactor = draw_frequency * draw_frequency_factor;
           Ball_yposition  = Tube.YBottom;
@@ -1063,7 +1128,7 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
       Ball.position       = [(setup.xCen-Ball.width/2) (Ball_yposition - Ball.width - Ball.DrawFactor)...
                             (setup.xCen+Ball.width/2) (Ball_yposition - Ball.DrawFactor)];
 
-      %% 13.5.4 general reward settings 
+      %% 16.06.4 general reward settings 
       % Ball above threshold
       % -> change color, start increasing score
       if Ball.position(1,4) < Threshold.yposition  
@@ -1121,7 +1186,7 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
       end
                 
       
-%% Part 13a: frEAT
+%% Part 16.06.5: frEAT
     if settings.do_gamepad == 1
         t_step = GetSecs;
         if (0.1 * i_step_fr) <= (t_step - t_trial_onset)
@@ -1130,7 +1195,7 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
             i_step_fr                   = i_step_fr + 1;
         end
         
-        [Joystick.X, Joystick.Y, Joystick.Z, Joystick.Button] = WinJoystickMex(JoystickSpecification.Handle);
+        [Joystick.X, Joystick.Y, Joystick.Z, Joystick.Button] = WinJoystickMex(JoystickSpecification);
                  
         %Buffer routine
         for buffer_i = 2:50 %buffer_size
@@ -1214,7 +1279,7 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
          
             
 
-%% Part 13b: grEAT specific input query
+%% Part 16.06.6: grEAT specific input query
     elseif settings.do_gamepad == 0
     [b,c] = KbQueueCheck;  
 
@@ -1250,7 +1315,7 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
             i_step_gr                = i_step_gr + 1;           
     end
     
-%% 13.6 End of trial
+%% 16.07 End of trial
     
     count_joy    = 1;
     end_of_trial = GetSecs;
@@ -1289,24 +1354,26 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
     end
     
     end
-%% 13.7 Fixation cross 1
-if settings.do_fmri == 1 && ~strcmp(subj.runLABEL, 'training') 
+%% 16.08 Fixation cross 1
+if timings.fix1_length > 0
     fix = '+';
     Screen('TextSize',w,64);
     Screen('TextFont',w,'Arial');
     [pos.text.x,pos.text.y,pos.text.bbox] = DrawFormattedText(w, fix, 'center', 'center', color.black,80);
     [time.fix, starttime]                 = Screen('Flip', w);
-
-    timestamps.fix1(i_trial,1)        = starttime;
-    MR_timings.onsets.fix1(i_trial,1) = starttime - MR_timings.trigger.fin;
     
-    %Show screen for 1s plus jitter value (drawn from exponential distribution with mean of 3 and max = 12)
+    timestamps.fix1(i_trial,1)        = starttime;
+    %Show screen for fix time plus jitter value
     WaitSecs(timings.fix1_length + fix1_jitter(i_trial,1)); 
-
-    MR_timings.durations.fix1(i_trial,1) = timings.fix1_length + fix1_jitter(i_trial,1);
+    
+    if settings.do_fmri == 1
+        
+        MR_timings.onsets.fix1(i_trial,1) = starttime - MR_timings.trigger.fin;
+        MR_timings.durations.fix1(i_trial,1) = timings.fix1_length + fix1_jitter(i_trial,1);        
+    end
 end
 
-%% 13.8 VAS
+%% 16.09 VAS
 if settings.do_VAS == 1
     if settings.VAS.exhaustion == 1
         trial.question = 'exhausted';
@@ -1373,7 +1440,7 @@ if settings.do_VAS == 1
     
 end
 
-%% 13.9 Feedback to trial
+%% 16.10 Feedback to trial
 if settings.do_feedback == 1
 timer_onset_feedback = GetSecs;
 onset_start = 0;
@@ -1493,7 +1560,7 @@ end
 
 end
 
-%% VAS after feedback
+%% 16.11 VAS after feedback
 if settings.do_VAS == 1
     if settings.VAS.happy2 == 1
         trial.question = 'gluecklich';
@@ -1525,9 +1592,9 @@ if settings.do_VAS == 1
     end
 end
 
-%% 13.10 Show inter-trial interval fixation cross
+%% 16.12 Show inter-trial interval fixation cross
 
-% Fixation cross
+% Fixation cross 2
 fix = '+';
 Screen('TextSize',w,64);
 Screen('TextFont',w,'Arial');
@@ -1544,7 +1611,7 @@ if settings.do_fmri == 1 && ~strcmp(subj.runLABEL, 'training')
     MR_timings.durations.fix2(i_trial,1) = timings.fix1_length + fix2_jitter(i_trial,1);
 end
 
-%% 13.12 prepare data output
+%% 16.13 prepare data output
 
 %save max effort of training
 if strcmp(subj.runLABEL, 'training') 
@@ -1632,11 +1699,11 @@ end
 % Create & Save temporary output data
 if linux || mac
     
-    output.filename = sprintf('%s/Backup/EAT%s_%s_%s_S%s_R%S_temp', ...
+    output.filename = sprintf('%s/backup/EAT%s_%s_%s_S%s_R%S_temp', ...
                                 pwd, subj.runLABEL, subj.study, subj.subjectID, subj.sessionID, subj.runID);    
 elseif windows
     
-    output.filename = sprintf('%s\\Backup\\EAT%s_%s_%s_S%s_R%S_temp', ...
+    output.filename = sprintf('%s\\backup\\EAT%s_%s_%s_S%s_R%S_temp', ...
                                 pwd, subj.runLABEL, subj.study, subj.subjectID, subj.sessionID, subj.runID);   
 end
 
@@ -1650,7 +1717,7 @@ else
     save([output.filename datestr(subj.date,'_yymmdd_HHMM') '.mat'], 'output', 'subj', 'input_device', 'conditions', 'timestamps', 'MR_timings')
 end
 
-%% Clear Variables to initiate new trial
+%% 16.14 Clear Variables to initiate new trial
 
 t_payout                = [nan; nan];
 i_payout_onset          = 1;
@@ -1703,7 +1770,7 @@ end
 
 end
 
-%% Part 14: After experiment
+%% Part 17: After experiment
 
 % Update maxEffort based on highest value during practice trials
 if strcmp(subj.runLABEL, 'training')     
@@ -1825,7 +1892,7 @@ if  settings.do_gamepad == 1
     else
         save(fullfile('data', [output.filename '.mat']), 'output', 'subj', 'input_device', 'joy', 'conditions', 'timestamps');
     end
-    save(fullfile('Backup', [output.filename datestr(now,'_yymmdd_HHMM') '.mat']));
+    save(fullfile('backup', [output.filename datestr(now,'_yymmdd_HHMM') '.mat']));
 else
    if settings.do_fmri == 1 && ~strcmp(subj.runLABEL, 'training')
        save(fullfile('data', [output.filename '.mat']), 'output', 'subj', 'input_device', 'conditions', 'timestamps','MR_timings');

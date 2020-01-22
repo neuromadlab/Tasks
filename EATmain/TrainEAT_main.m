@@ -237,7 +237,7 @@ for i_collectMax = 1:settings.train_trials
              [b,c] = KbQueueCheck;  
              % Continuously log position and time of the button for the right index
              % finger -> Joystick.Z
-             [Joystick.X, Joystick.Y, Joystick.Z, Joystick.Button] = WinJoystickMex(JoystickSpecification.Handle);
+             [Joystick.X, Joystick.Y, Joystick.Z, Joystick.Button] = WinJoystickMex(JoystickSpecification);
              
              %Buffer routine
              for buffer_i = 2:50 %buffer_size
@@ -564,7 +564,7 @@ if settings.do_val_cal == 1
                  [b,c] = KbQueueCheck;  
                  % Continuously log position and time of the button for the right index
                  % finger -> Joystick.Z
-                 [Joystick.X, Joystick.Y, Joystick.Z, Joystick.Button] = WinJoystickMex(JoystickSpecification.Handle);
+                 [Joystick.X, Joystick.Y, Joystick.Z, Joystick.Button] = WinJoystickMex(JoystickSpecification);
 
                  %Buffer routine
                  for buffer_i = 2:50 %buffer_size
@@ -776,12 +776,12 @@ coeff_food  = polyfit(bidding.food(2,:), bidding.food(1,:), 1);
 eff_money_standard = coeff_money(1)*100 + coeff_money(2);
 x_food             = ((eff_money_standard - coeff_food(2))/coeff_food(1))/100; %compute the x-value for which food is worth the same amount of effort as 1 euro
 
-if x_food >= 0.25 && x_food <= 4
+if x_food >= 0.5 && x_food <= 2
     input_device.value_factor    = x_food;
-elseif x_food > 4
-    input_device.value_factor    = 4;
-elseif x_food < 0.25
-    input_device.value_factor    = 0.25;
+elseif x_food > 2
+    input_device.value_factor    = 2;
+elseif x_food < 0.5
+    input_device.value_factor    = 0.5;
 end
 
 value_factor             = input_device.value_factor;
@@ -790,15 +790,17 @@ input_device.value_food  = round(input_device.value_money * input_device.value_f
 
 dlmwrite(fullfile('data', [value_file_name '.txt']), value_factor)
 
-elseif isfile(fullfile('data', [value_file_name '.txt']))
-    input_device.value_factor = dlmread(fullfile('data', [value_file_name '.txt']));
-    input_device.value_money  = settings.value_money;
-    input_device.value_food   = round(input_device.value_money * input_device.value_factor);
-else
-    input_device.value_food   = settings.value_food;
-    input_device.value_money  = settings.value_money;
-    input_device.comp_factor  = nan;
-    collectBid                = [];
+elseif settings.do_fmri  == 0
+    if isfile(fullfile('data', [value_file_name '.txt']))
+        input_device.value_factor = dlmread(fullfile('data', [value_file_name '.txt']));
+        input_device.value_money  = settings.value_money;
+        input_device.value_food   = round(input_device.value_money * input_device.value_factor);
+    else
+        input_device.value_food   = settings.value_food;
+        input_device.value_money  = settings.value_money;
+        input_device.comp_factor  = nan;
+        collectBid                = [];
+    end
 end
 
 %% End of TRAINING
