@@ -9,7 +9,7 @@
 %
 %========================================================
 
-clear
+%clear
 %sca
 
 %% General settings
@@ -280,10 +280,10 @@ if settings.do_GFD == 1
 
     % Parameters to draw ball movement force using individual max and min Effort
 
-    restforce = input_device.minEffort - 0.05*(input_device.minEffort - input_device.maxEffort); % 5% over min force
-    maxpossibleforce = input_device.maxEffort; %upper limit of GFD
-    delta_pos_force = input_device.minEffort - maxpossibleforce; 
-    clckforce = input_device.minEffort - 0.35*abs(input_device.minEffort - input_device.maxEffort);
+    restforce = input_device.minForce - 0.05*(input_device.minForce - input_device.maxForce); % 5% over min force
+    maxpossibleforce = input_device.maxForce; %upper limit of GFD
+    delta_pos_force = input_device.minForce - maxpossibleforce; 
+    clckforce = input_device.minForce - 0.35*abs(input_device.minForce - input_device.maxForce);
     if (debug == 1 && settings.do_fmri == 1) || settings.do_fmri ~= 1
         [Joystick.X, Joystick.Y, Joystick.Z, Joystick.Button] = WinJoystickMex(GripForceSpec);
     else
@@ -754,8 +754,6 @@ if settings.do_fmri == 1
     else % choose block y
         output.lottery.effort_winning_trial = output.data_mat(35, 12);
     end
-    % Convert to number
-    output.lottery.effort_winning_trial=output.lottery.effort_winning_trial{1};
     
     % Determine probability of winning based on exerted force
     if output.lottery.effort_winning_trial < 64
