@@ -558,6 +558,9 @@ effort_vector   = [nan]; %stores effort value
 
 %% Part 12: Input device dependent values
 
+prev_movingAvrg_phantom(1,1) = prev_movingAvrg;
+phantom_current_input       = 0;
+
 %%% 12.1: frequency
 if settings.do_gamepad == 1 % if frEAT
     load('JoystickSpecification.mat')
@@ -1216,55 +1219,68 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
             end
 
             %Frequency estimation based on Button Press            
-            if c(keys.resp) > 0 || count_joystick == 1
-
-                if (t_button > (t_trial_onset + 0.1)) %Prevents too fast button press at the beginning
-
+            if c(keys.resp) > 0 || count_joystick == 1                
+                
+                if (t_button > (t_trial_onset + 0.1)) %Prevents too fast button press at the beginning                    
                     t_button_vec(1,i_resp) = t_button;
                     %Exponential weightended Average of RT for frequency estimation
                     current_input = t_button - t_buttonN_1;
                     current_weight_fact = forget_fact * prev_weight_fact + 1;
                     Avrg_value = (1-(1/current_weight_fact)) * prev_movingAvrg + ((1/current_weight_fact) * current_input);
-                    frequency_estimate = freq_interval/Avrg_value;
-
+                    frequency_estimate = freq_interval/Avrg_value;                    
+                    
                     %update Ball height and store frequency for output
                     draw_frequency             = frequency_estimate; 
-                    frequency_vector(1,i_resp) = frequency_estimate;
-
+                    frequency_vector(1,i_resp) = frequency_estimate;                    
+                    
                     %Refresh values
                     prev_weight_fact = current_weight_fact; 
                     prev_movingAvrg  = Avrg_value;
-                    t_buttonN_1      = t_button;
-
+                    t_buttonN_1      = t_button;                    
+                    
                     collect_freq.avrg(1,i_resp)              = Avrg_value;
-                    collect_freq.t_button_interval(1,i_resp) = current_input;
-
+                    collect_freq.t_button_interval(1,i_resp) = current_input;                    
+                    
                     i_resp         = i_resp + 1;
                     count_joystick = 0;
+                    
+                    % stores the previous moving average for use in case
+                    % button press ceases; used to maintain draw_frequency while 
+                    % listening for button presses
+                    prev_movingAvrg_phantom(1,2) = prev_movingAvrg_phantom(1,1);
+                    prev_movingAvrg_phantom(1,1) = Avrg_value;                
+                
                 end
-
-
-                 %if no button press happened: Frequency should decrease slowly based on phantom estimates   
-             elseif (GetSecs - t_buttonN_1) > (1.5 * Avrg_value) && (i_resp > 1)
-
-                    phantom_current_input   = GetSecs - t_buttonN_1;
+                
+                % if no button press happened: Frequency should decrease slowly based on phantom estimates
+                % ball stays afloat for a time of 1.5*Avrg_value, meanwhile
+                % draw_frequency from last button press is maintained
+            
+            elseif (GetSecs - t_buttonN_1) < (1.5*Avrg_value) && (i_resp > 1)                    
+                
+                phantom_t_buttonN_1     = GetSecs - current_input;             
+                
+                % begin ball descent 
+            elseif (GetSecs - t_buttonN_1) > (1.5*Avrg_value) && (i_resp > 1)                    
+                
+                phantom_current_input   = GetSecs - phantom_t_buttonN_1;
                     current_weight_fact     = forget_fact * prev_weight_fact + 1;
-                    Estimate_Avrg_value     = (1-(1/current_weight_fact)) * prev_movingAvrg + ((1/current_weight_fact) * phantom_current_input);
+                    Estimate_Avrg_value     = (1-(1/current_weight_fact)) * prev_movingAvrg_phantom(1,2) + ((1/current_weight_fact) * phantom_current_input);
                     phantom.freq            = freq_interval/Estimate_Avrg_value;
-
-                    %update Ball height
-                    draw_frequency          = phantom.freq; 
-
-                    %Refresh values in phantom output vector
+                    
+                %update Ball height
+                    draw_frequency          = phantom.freq;                     
+                    
+                %Refresh values in phantom output vector
                     prev_weight_fact        = current_weight_fact; 
-                    prev_movingAvrg         = Estimate_Avrg_value;
-
+                    prev_movingAvrg         = Estimate_Avrg_value;                    
+                    
                     phantom.avrg(1,i_phantom)               = Avrg_value;
                     phantom.t_button_interval(1,i_phantom)  = current_input;
-                    phantom.frequency(1,i_phantom)          = phantom.freq; 
-
-                    i_phantom = i_phantom + 1;
-
+                    phantom.frequency(1,i_phantom)          = phantom.freq;                     
+                    
+                    i_phantom = i_phantom + 1;            
+            
             end
               
          end
@@ -1840,6 +1856,9 @@ else
 end
 
 %% 16.14 Clear Variables to initiate new trial
+
+prev_movingAvrg_phantom(1,1) = prev_movingAvrg;
+phantom_current_input       = 0;
 
 t_payout                = [nan; nan];
 i_payout_onset          = 1;
