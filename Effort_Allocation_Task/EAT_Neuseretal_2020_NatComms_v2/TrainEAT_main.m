@@ -11,7 +11,7 @@
 %% Clear data vectors / initialize start values
 
 if settings.do_gamepad == 1 % if frEAT
-    load('JoystickSpecification.mat')
+    load('./input_specs/JoystickSpecification.mat')
     % initialize frequency specific values
     i_step_fr           = 1;  % Enummarate over loops
     count_joy           = 1;
@@ -53,7 +53,7 @@ if settings.do_gamepad == 1 % if frEAT
     
 else % grip force device (grEAT)
     % initialize grip force device
-    load('GripForceSpec.mat')
+    load('./input_specs/GripForceSpec.mat')
     % initialize grip force specific values    
     if windows
 

@@ -23,7 +23,7 @@ Screen('Preference', 'SkipSyncTests', 1);
 
 %% Part 1/2: settings and study information
 % load settings .mat file
-load('EAT_Settings.mat')
+load('./settings/EAT_Settings.mat')
 
 % Path to FCR folder
 if settings.debug == 1
@@ -227,34 +227,34 @@ fix2_jitter = Shuffle(DelayJitter);
 
 % load regular images for behavioral task
 if settings.do_fmri == 0
-    [img_coin.winCounter, img_coin.map, img_coin.alpha]       = imread('singlecoin.jpg');
-    [img_cookie.winCounter, img_cookie.map, img_cookie.alpha] = imread('singlecookie_choc.jpg');
+    [img_coin.winCounter, img_coin.map, img_coin.alpha]       = imread('./stimuli/singlecoin.jpg');
+    [img_cookie.winCounter, img_cookie.map, img_cookie.alpha] = imread('./stimuli/singlecookie_choc.jpg');
 
-    [img.incentive_coins1, img.map, img.alpha]  = imread('incentive_coins1.jpg');
-    [img.incentive_coins10, img.map, img.alpha] = imread('incentive_coins10_2.jpg');
+    [img.incentive_coins1, img.map, img.alpha]  = imread('./stimuli/incentive_coins1.jpg');
+    [img.incentive_coins10, img.map, img.alpha] = imread('./stimuli/incentive_coins10_2.jpg');
 
-    [img.incentive_cookies1, img.map, img.alpha]  = imread('incentive_cookies_choc1.jpg');
-    [img.incentive_cookies10, img.map, img.alpha] = imread('incentive_cookies_choc10_2.jpg');
+    [img.incentive_cookies1, img.map, img.alpha]  = imread('./stimuli/incentive_cookies_choc1.jpg');
+    [img.incentive_cookies10, img.map, img.alpha] = imread('./stimuli/incentive_cookies_choc10_2.jpg');
     
     if strcmp(subj.runLABEL, 'training') && settings.do_val_cal == 1
-        [img.bidding_food_50, img.map, img.alpha]  = imread('snickers_50.png');
-        [img.bidding_food_100, img.map, img.alpha] = imread('snickers_100.png');
-        [img.bidding_food_200, img.map, img.alpha] = imread('snickers_200.png');
+        [img.bidding_food_50, img.map, img.alpha]  = imread('./stimuli/snickers_50.png');
+        [img.bidding_food_100, img.map, img.alpha] = imread('./stimuli/snickers_100.png');
+        [img.bidding_food_200, img.map, img.alpha] = imread('./stimuli/snickers_200.png');
         
-        [img.bidding_money_50, img.map, img.alpha]  = imread('money_50.png');
-        [img.bidding_money_100, img.map, img.alpha] = imread('money_100.png');
-        [img.bidding_money_200, img.map, img.alpha] = imread('money_200.png');
+        [img.bidding_money_50, img.map, img.alpha]  = imread('./stimuli/money_50.png');
+        [img.bidding_money_100, img.map, img.alpha] = imread('./stimuli/money_100.png');
+        [img.bidding_money_200, img.map, img.alpha] = imread('./stimuli/money_200.png');
     end
     
 else % load mirrored images for fmri experiment
-    [img_coin.winCounter, img_coin.map, img_coin.alpha]       = imread('singlecoinM.jpg');
-    [img_cookie.winCounter, img_cookie.map, img_cookie.alpha] = imread('singlecookie_chocM.jpg');
+    [img_coin.winCounter, img_coin.map, img_coin.alpha]       = imread('./stimuli/singlecoinM.jpg');
+    [img_cookie.winCounter, img_cookie.map, img_cookie.alpha] = imread('./stimuli/singlecookie_chocM.jpg');
 
-    [img.incentive_coins1, img.map, img.alpha]  = imread('incentive_coins1M.jpg');
-    [img.incentive_coins10, img.map, img.alpha] = imread('incentive_coins10_2M.jpg');
+    [img.incentive_coins1, img.map, img.alpha]  = imread('./stimuli/incentive_coins1M.jpg');
+    [img.incentive_coins10, img.map, img.alpha] = imread('./stimuli/incentive_coins10_2M.jpg');
 
-    [img.incentive_cookies1, img.map, img.alpha]  = imread('incentive_cookies_choc1.jpg');
-    [img.incentive_cookies10, img.map, img.alpha] = imread('incentive_cookies_choc10_2M.jpg');
+    [img.incentive_cookies1, img.map, img.alpha]  = imread('./stimuli/incentive_cookies_choc1.jpg');
+    [img.incentive_cookies10, img.map, img.alpha] = imread('./stimuli/incentive_cookies_choc10_2M.jpg');
 end
 
 % Create time stamp
@@ -563,7 +563,7 @@ phantom_current_input       = 0;
 
 %%% 12.1: frequency
 if settings.do_gamepad == 1 % if frEAT
-    load('JoystickSpecification.mat')
+    load('./input_specs/JoystickSpecification.mat')
     % initialize frequency specific values
     i_step_fr           = 1;  % Enummarate over loops
     count_joy           = 1;
@@ -603,7 +603,7 @@ if settings.do_gamepad == 1 % if frEAT
 %%% 12.2: grip force    
 else % grip force device (EAT)
     % initialize grip force device
-    load('GripForceSpec.mat')
+    load('./input_specs/GripForceSpec.mat')
     % initialize grip force specific values    
     if windows
 
