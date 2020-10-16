@@ -21,6 +21,15 @@ sca;
 % Automatic operating information
 Screen('Preference', 'SkipSyncTests', 1);
 
+% Check for data folders
+if 7~=exist('./backup','dir')
+	mkdir('./backup')
+end
+
+if 7~=exist('./data','dir')
+	mkdir('./data')
+end
+
 %% Part 1/2: settings and study information
 % load settings .mat file
 load('./settings/EAT_Settings.mat')
@@ -558,9 +567,6 @@ effort_vector   = [nan]; %stores effort value
 
 %% Part 12: Input device dependent values
 
-prev_movingAvrg_phantom(1,1) = prev_movingAvrg;
-phantom_current_input       = 0;
-
 %%% 12.1: frequency
 if settings.do_gamepad == 1 % if frEAT
     load('./input_specs/JoystickSpecification.mat')
@@ -587,6 +593,8 @@ if settings.do_gamepad == 1 % if frEAT
     frequency_estimate  = 0;
     draw_frequency      = 0;    % used to determine ball height
     freq_interval       = 1;    % Frequency estimation interval 1 sec
+    prev_movingAvrg_phantom(1,1) = prev_movingAvrg;
+    phantom_current_input       = 0;
 
     collect_freq.t_button_interval  = []; 
     collect_freq.avrg               = []; %!! Remove? seems unused 
@@ -1857,9 +1865,6 @@ end
 
 %% 16.14 Clear Variables to initiate new trial
 
-prev_movingAvrg_phantom(1,1) = prev_movingAvrg;
-phantom_current_input       = 0;
-
 t_payout                = [nan; nan];
 i_payout_onset          = 1;
 exc_thresh_this_trial   = 0;
@@ -1891,6 +1896,8 @@ elseif settings.do_gamepad == 1
     frequency_estimate  = 0;
     prev_weight_fact    = 0; 
     prev_movingAvrg     = 0;
+    prev_movingAvrg_phantom(1,1) = prev_movingAvrg;
+    phantom_current_input       = 0;
 
     collect_freq.avrg              = [];
     collect_freq.t_button_interval = []; 

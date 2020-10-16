@@ -37,6 +37,8 @@ if settings.do_gamepad == 1 % if frEAT
     Avrg_value          = 0;   
     frequency_estimate  = 0;
     freq_interval       = 1;    % Frequency estimation interval 1 sec
+    prev_movingAvrg_phantom(1,1) = prev_movingAvrg;
+    phantom_current_input       = 0;
 
     collect_freq.t_button_interval  = []; %!! Remove? seems unused 
     collect_freq.avrg               = []; %!! Remove? seems unused 
@@ -163,7 +165,7 @@ for i_collectMax = 1:settings.train_trials
 
     WaitSecs(1); %Show screen for 1s
     
-    %% Actual traing trial start (recortstart time)
+    %% Actual training trial start (recortstart time)
     t_collectMax_onset = GetSecs;
     t_buttonN_1        = t_collectMax_onset;
     
@@ -270,7 +272,7 @@ for i_collectMax = 1:settings.train_trials
                 
                 if c(keys.resp) > 0 || count_joystick == 1                
                 
-                    if (t_button > (t_trial_onset + 0.1)) %Prevents too fast button press at the beginning                    
+                    if (t_button > (t_collectMax_onset + 0.1)) %Prevents too fast button press at the beginning                    
                     t_button_vec(1,i_resp) = t_button;
                     %Exponential weightended Average of RT for frequency estimation
                     current_input = t_button - t_buttonN_1;
@@ -756,6 +758,8 @@ if settings.do_val_cal == 1
             frequency_estimate  = 0;
             prev_weight_fact    = 0; 
             prev_movingAvrg     = 0;
+            prev_movingAvrg_phantom(1,1) = prev_movingAvrg;
+
 
             collectMax.avrg(1,i_resp)              = Avrg_value;
             collectMax.t_button_interval(1,i_resp) = current_input; 
