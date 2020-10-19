@@ -1,4 +1,4 @@
-# Effort Allocation Task - Neuser et al. (2020, *NatComm*, DOI: 10.1038/s41467-020-17344-9)
+# Effort Allocation Task - Neuser et al. (2020, *NatComm*, DOI: [10.1038/s41467-020-17344-9](https://doi.org/10.1038/s41467-020-17344-9))
 
 To run this task, [Psychtoolbox including gstreamer](http://psychtoolbox.org/) has to be installed. Furthermore a game controller has to be connected as a HID device to the experimental computer. This version of the task is verified to run with the cabled version of the XBOX 360 Controller (for Windows). It might run out of the box with other controllers, but this was not tested. 
 Task execution has been tested with Matlab version R2017a. Due to the utilization of the WinJoystickMex function from Psychtoolbox, the task can only be executed properly on a computer running the Windows operating system.
