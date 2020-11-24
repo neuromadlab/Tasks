@@ -652,6 +652,11 @@ if training_run == 2
 
                                 i_resp          = i_resp + 1;
                                 count_joystick  = 0;
+                                
+                                % stores the previous moving average for use in case
+                                % button press ceases; used to maintain draw_frequency
+                                prev_movingAvrg_phantom(1,2) = prev_movingAvrg_phantom(1,1);
+                                prev_movingAvrg_phantom(1,1) = Avrg_value;
 
                             end
                             
