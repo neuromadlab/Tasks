@@ -1,6 +1,6 @@
 # Body Silhouette Coloring Task (BodySilC)
 
-Based on the emBODY task: Nummenmaa L., Glerean E., Hari R., Hietanen, J.K. (2014). Bodily maps of emotions, Proceedings of the National Academy of Sciences of United States of America doi: [10.1073/pnas.1321664111](http://www.pnas.org/content/111/2/646.abstract)
+Based on the emBODY task: Nummenmaa L., Glerean E., Hari R., Hietanen, J.K. (2014). Bodily maps of emotions, *Proceedings of the National Academy of Sciences, 111* (2), 646-651; DOI: [10.1073/pnas.1321664111](http://www.pnas.org/content/111/2/646.abstract)
 
 ## What is this task about
 This MATLAB task allows to color body silhouettes in an intuitive way (e.g. to assess bodily perceptions). You can select parts of the silhouette by using a mouse. Clicking the left button increases the color intensity, while clicking the right button leads to a decrease. There are two color scales implemented (for activation and deactivation). You can choose between two circular brush sizes (radius 6 pixels or 12 pixels). The color changing speed can be adapted (details below). Task instructions are available in German and English. For more details see the 'Settings/Modifications' section.
