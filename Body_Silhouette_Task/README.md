@@ -12,7 +12,7 @@ This MATLAB task allows to color body silhouettes in an intuitive way (e.g. to a
 * silhouette_settings.mat (needs to be stored in the same folder as BodySilC.m)
 * Data and Backup folder in the same path
 
-## Output: 
+## Output 
 * RGB arrays with intensity values of activation and deactivation
 * order of performed coloring actions (position in the picture, 1 (= increase in color intensity) or -1 (= decrease in color intensity))
 
