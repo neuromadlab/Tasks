@@ -1033,9 +1033,7 @@ for i_trial = 1:length(conditions) %condition file determines repetitions
     end
     
     %Show screen for 1s plus jitter value (drawn from exponential distribution with mean of 2 and max = 12)
-    if settings.do_fmri == 1 && ~strcmp(subj.runLABEL, 'training')             
-        WaitSecs(1 + ball_jitter(i_trial,1)); 
-    end
+    WaitSecs(1 + ball_jitter(i_trial,1)); 
 
     MR_timings.durations.condition_preview_reward(i_trial,1) = 1 + ball_jitter(i_trial,1);
     
