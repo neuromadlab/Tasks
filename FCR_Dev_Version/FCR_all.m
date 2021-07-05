@@ -1,4 +1,4 @@
-    %%===================Food evaluation paradigm===================
+%%===================Food evaluation paradigm===================
 %For a description of the set of images, see Charbonnier (2015) Appetite
 
 %Coded by: Nils Kroemer 
@@ -16,7 +16,7 @@ sca
 %% General settings
 subj.version = 3; %Task version
 output.version = subj.version;
-subj.study = 'TUE004';
+subj.study = 'TUE007'; % Enter here current study name
 
 subj.sessionID = input('Session ID: ','s');
 subj.runID = input('Run ID: ','s');
@@ -94,13 +94,23 @@ elseif settings.do_fmri == 1
        start_rep = 1;
        end_rep = 1;
        
-else %eg. strcmp(subj.study, 'TUE004')
+elseif strcmp(subj.study, 'TUE004')
     
        settings.do_NF = 0;
        start_rep = (subj.sess*2 - 1); % Session 1_R1 -> Column 1 
                                       % Session 2_R1 -> Column 3
        end_rep = (subj.sess*2);       % Session 1_R1 -> Column 2
                                       % Session 2_R1 -> Column 4
+elseif strcmp(subj.study, 'TUE007') 
+       settings.do_NF = 0;
+       start_rep = (subj.sess*2 - 1); % Session 1_R1 -> Column 1 
+                                      % Session 2_R1 -> Column 3
+                                      % Session 3_R1 -> Column 5 
+                                      % Session 4_R1 -> Column 7
+       end_rep = (subj.sess*2);       % Session 1_R1 -> Column 2
+                                      % Session 2_R1 -> Column 4
+                                      % Session 3_R1 -> Column 6
+                                      % Session 4_R1 -> Column 8
     
 end
 
