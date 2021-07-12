@@ -1,18 +1,19 @@
 % Shuffle Script 
 % Creates shuffled condition files for Food Cue Reactivity task
-% Source: folder 'Stimuly_TUE002'
+% Source: folder 'Stimuli'
 
 % Adapted by Chloe July 2019 / Monja October / Monja April 2020
 % After QC of first BEDVAr Data: error in uniform allocation
 % of image types to ratings
 %% settings
 
+study_name = 'TUE004'; 
 % Does this condition/image selection case exist already? 0 = no, 1 = yes
 Shuffle_Cond_Version = 1; %1=behav&food / 2=behav&NF / 3=fMRI&food&NF 
 % Create pilot or experiment condition files: 0 = pilot / 1 = participant
 create_exp_files = 0;
 % Selection of images has been completed 0= no / 1 = yes
-selection_exists = 1;
+selection_exists = 0;
 % For BEDVAR MRI version:
 % Some NF images have to be re-ordered after randomization
 BEDVAR_NF = 1; %change to 0 if randomization script is used for other studies
@@ -22,7 +23,7 @@ BEDVAR_NF = 1; %change to 0 if randomization script is used for other studies
 if selection_exists == 0
     
     %Load full images set
-    images = dir('Stimuli_TUE002'); % read all images available
+    images = dir('Stimuli'); % read all images available
     
     % Add new variable 'select', pre-defined with 0
     for i = 1:length(images)
@@ -37,11 +38,11 @@ if selection_exists == 0
     
     switch Shuffle_Cond_Version
         case 1
-            filename = [pwd '\img_sel_TUE002_beh.mat']; %change path/name accordingly
+            filename = [pwd '\img_sel_',study_name,'_beh.mat']; %change path/name accordingly
         case 2
-            filename = [pwd '\img_sel_TUE002_NF.mat'];
+            filename = [pwd '\img_sel_',study_name,'_NF.mat'];
         case 3
-            filename = [pwd '\img_sel_TUE002_fMRI.mat'];
+            filename = [pwd '\img_sel_',study_name,'_fMRI.mat'];
     end
     
     save(filename, 'images')
@@ -58,16 +59,15 @@ if selection_exists == 1     % Selection exists
     
     switch Shuffle_Cond_Version
         case 1
-            load('img_sel_TUE002_beh.mat')
+            load('img_sel_',study_name,'_beh.mat')
         case 2
-            load('img_sel_TUE002_NF.mat')
+            load('img_sel_',study_name,'_NF.mat')
         case 3
-            load('img_sel_TUE002_fMRI.mat')  
+            load('img_sel_',study_name,'_fMRI.mat')  
     end
     
     % Extract image files being used
-    images([images.select] == 0) = [];
-    
+    length(images([images.select] == 1)) = [];
     
 
 %% For behavioral testing   
@@ -200,7 +200,8 @@ if (Shuffle_Cond_Version == 1 || Shuffle_Cond_Version == 2)
         
         %Rearrange design matrix to long format
         for i_rep=1:n_reps
-        design.rand.order_mat((((i_rep-1)*n_trials)+1):(i_rep*n_trials),5) = i_rep;
+        design.rand.
+        ((((i_rep-1)*n_trials)+1):(i_rep*n_trials),5) = i_rep;
             for i_img = 1:n_trials
                 img_mat = design.rand.image_mat(i_img,i_rep);
                 img_file = design.rand.image_file(i_img,i_rep);
@@ -226,7 +227,7 @@ if (Shuffle_Cond_Version == 1 || Shuffle_Cond_Version == 2)
                  img_spec = [1 1 0]; % food / sweet / not hcal
               case 'NF'
                   img_spec = [0 0 0]; % not food / not sweet / not hcal                 
-                end
+              end
 
                 
                 design.rand.order_mat((((i_rep-1)*n_trials)+i_img),7:9) = img_spec;
