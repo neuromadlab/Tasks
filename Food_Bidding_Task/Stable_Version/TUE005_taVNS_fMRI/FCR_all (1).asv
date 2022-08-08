@@ -1,0 +1,529 @@
+    %%===================Food evaluation paradigm===================
+%For a description of the set of images, see Charbonnier (2015) Appetite
+
+%Coded by: Nils Kroemer 
+%Coded with: Matlab R2014a using Psychtoolbox 3.0.11
+%
+%new SubjID format (6-digits) introduced by Monja, 2019-04-01
+%========================================================
+clear
+
+%debugging settings
+% subjn = 9999;
+% sess = 1;
+%scan_id = '014_90002';
+Screen('Preference', 'SkipSyncTests', 1);
+
+% Get operating system and set OS flags
+system_info = Screen('Computer');
+windows = system_info.windows;
+mac = system_info.osx;
+linux = system_info.linux;
+
+%% set input / get subject specific info from the MATLAB console
+subj.study='TUE002';
+subj.subjectID=input('Subject ID: ','s');
+subj.sessionID= '1';
+subj.runID =input('Run ID: ','s');
+subj.subjectID = pad(subj.subjectID,6,'left','0');
+subj.version = 2;
+subj.date = datestr(now, 'yymmdd-HHMM');
+
+subj.id = str2double(subj.subjectID); %converts Subject ID to integer
+subj.sess = str2double(subj.sessionID); %converts Session ID to integer
+subj.run = str2double(subj.runID); %converts Run ID to integer
+
+%paradigm settings
+
+do_fullscreen = 1; %will show window as fullscreen (default second monitor, if connected)
+do_joystick = 0;
+do_gamepad = 0;
+do_fmri_flag = 0; %will include trigger
+    dummy_volumes = 2; %will have to be set according to the sequence
+    keyTrigger=KbName('s');
+    keyTrigger2=KbName('5');
+    keyQuit=KbName('q');
+    keyResp=KbName('1');
+    keyResp2=KbName('1');
+    count_trigger = 0;
+%do_NF = 1; % 1 loads NF items for the task during taste test (Runs 5 & 6)
+%Now in if statement later on
+
+if subj.run == 3
+   do_NF = 1;
+   startblock = 5;
+   endblock = 8;
+else
+   do_NF = 0;
+   startblock = (subj.run*2 - 1);
+   endblock = (subj.run*2);
+end
+    
+if do_fmri_flag == 1
+    
+    pic_dur = 3.5; %sets duration for the display of the pictures
+    
+else
+    pic_dur = 2;
+end
+
+    
+do_scales = 1; %will run scale in prob_scales*100% of trials
+    feedback_delay = 0.20; %for scales
+    preset = 1; %will skip separate initialization of scales
+    max_dur_rating = 2.8; %after the specified seconds, the rating screen will terminate
+    color_scale_background = [255 255 255]; %white
+    color_scale_anchors = [0 0 0]; %black
+    lang_de = 1; %changes display language to German
+    
+screen_offset_y = 0.01; %relative offset; positive values move the screen towards to top, negative towards the bottom
+scale_offset_y = 0.25;
+min_ISI = 0.1;
+
+
+
+if linux
+    
+   PowerMateID = PsychPowerMate('List');
+   
+   if ~isempty(PowerMateID)
+       
+       PowerMateHandle = PsychPowerMate('Open', PowerMateID);
+       vas_powermate = 1;
+       
+   else
+       
+       warning('Although FCR is run on a Linux system, no connected PowerMate could be found as input device for the VAS. Defaulting to mouse input now!')
+       vas_powermate = 0;
+       
+   end
+   
+elseif windows
+    
+    vas_powermate = 0;
+    
+end
+
+%load('JoystickSpecification_Genius.mat');
+load('JoystickSpecification.mat');
+
+%Screen('Preference', 'SkipSyncTests', 1);
+screens = Screen('Screens'); %Define display screen
+screenNumber = max(screens);
+if do_fullscreen == 1
+    w = Screen(screenNumber,'OpenWindow',[255 255 255]);
+    HideCursor()
+else
+    w = Screen('OpenWindow', 0, 255, [10 30 810 630]);
+    Screen('Preference', 'SkipSyncTests', 1);
+end
+
+% Get the center coordinates
+[ww, wh]=Screen('WindowSize', w);
+
+
+
+%initialize output matrix
+output.data_mat_hrzntl = [];
+%initialize settings
+%s = RandStream('mt19937ar','Seed','shuffle'); %reseed for MATLAB2014
+%RandStream.setGlobalStream(s);
+
+
+
+%load condition matrix
+
+if do_NF == 0
+
+    part_file = sprintf('Order_TUE002/FCRcond_mat_TUE002_%06d.mat',subj.id);
+else
+    part_file = sprintf('Order_TUE002_NF/FCRcond_mat_TUE002_%06d.mat',subj.id);
+end
+
+    load(part_file);
+
+%RandStream.setDefaultStream(RandStream('mt19937ar','seed',sum(100*clock))); %resets the seed for the random number generator
+
+if strcmp(subj.study, 'TUE002')
+    
+    if do_fmri_flag == 1
+    
+        p_trials = 24; %12 different blocks, each 2 times
+    
+    else
+        p_trials = length(design.stim.image_index); 
+    
+    end
+    
+else
+    
+    p_trials = 120; %tVNS
+    
+end
+
+%initialize output variables
+%out_resp = zeros(p_trials,1); %stores the number of button presses
+
+subj.time.trial = zeros(p_trials,1); %stores total trial time
+
+%scale images according to screen settings window width, ww, and window
+%height, wh
+scale_x = ww/1024;
+scale_y = wh/768;
+x_cent = ww/2;
+y_cent = wh/2;
+
+%initialize VARs
+rating = 0;
+text_freerating = [];
+          
+%instructions while subject is waiting for the trigger
+
+
+if lang_de == 1
+    
+    if strcmp(subj.study, 'TUE002')
+        
+        instruct.text_p1 = ['In der folgenden Aufgabe sehen Sie in zufaelliger Abfolge Bilder mit Essen. ' ...
+                         '\n\n Danach bitten wir Sie jeweils anzugeben, wie sehr Sie das dargestellte Essen ' ...
+                         '\n\n als Belohnung in diesem Moment gern erhalten wuerden, bzw. wie sehr Sie das ' ...
+                         '\n\n dargestellte Essen als Belohnung moegen. Wie sehr Sie das Objekt erhalten wollen, ' ...
+                         '\n\n bzw. moegen wird mittels verschiedener Skalen abgefragt werden: Bitte nutzen Sie die ' ...
+                         '\n\n horizontale Skala, um anzugeben, wie sehr Sie die Belohnung in diesem Moment erhalten ' ...
+                         '\n\n moechten und die vertikale Skala, um anzugeben, wie sehr Sie die dargestellte Belohnung ' ...
+                         '\n\n in diesem Moment moegen. Welche Skala jeweils nach einem Bild erscheint, wird zufaellig ' ...
+                         '\n\n ausgewaehlt. ' ...
+                         '\n\n Bevor Sie weiterklicken, wenden Sie Sich bitte noch kurz an die Versuchsleitung. '
+                         ];
+                     
+                             
+        instruct.text_p2 = ['Die Bilder können teilweise mehrfach gezeigt werden. ' ...
+                             '\n\n' ...
+                            '\n\nBitte verwenden Sie die Maus um den Regler auf der Skala zu bewegen ' ...
+                            '\n\n und klicken Sie mit einer Maustaste zur Eingabe Ihrer Bewertung. ' ...
+                            '\n\n Bitte nutzen Sie dafï¿½r Ihre nicht-dominante Hand. ' ...
+                            '\n\n ' ... 
+                         ];
+                     
+
+    else
+        
+        instruct.text_p1 = ['In der folgenden Aufgabe sehen Sie in zufaelliger Abfolge entweder Bilder mit Essen ' ...
+                         '\n\n oder Bueromaterialien. Danach bitten wir Sie jeweils anzugeben, wie sehr Sie' ...
+                         '\n\n das dargestellte Objekt als Belohnung in diesem Moment gern erhalten wuerden,' ...
+                         '\n\n bzw. wie sehr Sie das dargestellte Objekt als Belohnung moegen.' ...
+                         '\n\n Wie sehr Sie das Objekt erhalten wollen, bzw. moegen wird mittels verschiedener Skalen ' ...
+                         '\n\n abgefragt werden: Bitte nutzen Sie die horizontale Skala, um anzugeben, wie sehr Sie ' ...
+                         '\n\n die Belohnung in diesem Moment erhalten moechten und die vertikale Skala, um anzugeben, ' ...
+                         '\n\n wie sehr Sie die dargestellte Belohnung in diesem Moment moegen.' ...
+                         '\n\n Welche Skala jeweils nach einem Bild erscheint, wird zufaellig ausgewaehlt. ' ...
+                         ];
+    
+        instruct.text_p2 = ['Bevor Sie mit der Aufgabe beginnen, wenden Sie Sich bitte noch kurz an die Versuchsleitung. ' ...
+                         ];
+    end
+    
+else
+    instruct.text_p1 = [];
+%     ['Today, you will work for rewards like you practiced.' ...
+%     '\n\n You will always see the reward tree. Sometimes, only the rewards'...
+%     '\n\n appear at first. Other times, only your avatar will appear at first. ' ... 
+%     '\n\n Start pressing only AFTER you can see both your avatar and the rewards.' ...
+%     '\n\n The faster you press the button, the more likely it is you will get the' ...
+%     '\n\n rewards shown. The number of coins or fruit indicates ' ...
+%     '\n\n the amount of the reward. The distance of the avatar to the tree' ...
+%     '\n\n indicates how much effort is needed to obtain the reward.' ...
+%     '\n\n Today, you will not see your avatar move, only the outcome.' ...
+%     '\n\n If you win, a red or brown circle means you will receive milkshake.' ...
+%     '\n\n A yellow circle with a number inside means you have earned that many coins.' ...
+%     '\n\n The water drop indicates a rinse is coming. Please swallow' ...
+%     '\n\n only after you have received the rinse at the end of the trial.' ...
+%     '\n\n An open circle will appear when you should swallow.'];
+
+end 
+
+
+
+Screen('TextSize',w,28);
+Screen('TextFont',w,'Arial');
+[pos.x,pos.y,pos.bbox] = DrawFormattedText(w, instruct.text_p1, 'center', 'center', [0 0 0],150);
+[ons_resp, starttime] = Screen('Flip', w, []);
+
+GetClicks;
+
+Screen('TextSize',w,28);
+Screen('TextFont',w,'Arial');
+[pos.x,pos.y,pos.bbox] = DrawFormattedText(w, instruct.text_p2, 'center', 'center', [0 0 0],150);
+[ons_resp, starttime] = Screen('Flip', w, []);
+
+GetClicks;
+
+%%%%%%%start of the experiment
+time.on_trigger_loop = GetSecs;
+
+if do_fmri_flag == 1
+    KbQueueCreate();
+    KbQueueFlush(); 
+	KbQueueStart(); 
+	[ons_resp, starttime] = Screen('Flip', w, []);
+    [b,c] = KbQueueCheck;
+    
+    while c(keyQuit) == 0
+        [b,c] = KbQueueCheck;
+        if c(keyTrigger) || c(keyTrigger2) > 0
+            count_trigger = count_trigger + 1;
+            subj.trigger.all(count_trigger,1) = GetSecs;
+            if count_trigger > dummy_volumes
+                subj.trigger.fin = GetSecs;
+                break
+            end
+        end
+    end
+end   
+
+if do_fmri_flag == 0
+
+    subj.trigger.fin = GetSecs;
+end
+    
+KbQueueRelease();
+subj.time.exp_on = GetSecs;
+
+
+
+for block=startblock:endblock
+    
+    subj.blockID = num2str(block);
+    subj.block = block;
+    
+    if block < 5
+        %load jitters and initialize jitter counters
+        load('DelayJitter_mu_0.30_max_4_trials_120.mat');
+        jitter = Shuffle(DelayJitter);
+        %load('DelayJitter_mu_4_max_15_trials_48.mat');
+        %jitter_4s = Shuffle(DelayJitter);
+        count_jitter = 1;
+        %count_jitter_4s = 1;
+    else
+        %load jitters and initialize jitter counters
+        load('DelayJitter_mu_0.30_max_4_trials_40.mat');
+        jitter = Shuffle(DelayJitter);
+        %load('DelayJitter_mu_4_max_15_trials_48.mat');
+        %jitter_4s = Shuffle(DelayJitter);
+        count_jitter = 1;
+        %count_jitter_4s = 1;
+    end
+
+    for i_trial=1:p_trials
+        
+        if do_NF == 0
+
+            image_path = sprintf('Stimuli_TUE002/%s', design.rand.image_file{i_trial,subj.block});
+
+        else 
+            NF_clmn_index = block - 4;
+            image_path = sprintf('Stimuli_TUE002_NF/%s', design.rand.image_file{i_trial,NF_clmn_index});
+        end
+
+        [Pic, map, alpha] = imread(image_path);
+
+        %Texture_Pic = Screen('MakeTexture', w, Pic);
+
+        %Screen('DrawTexture', w, Texture_Pic, [], [0 0 ww wh]);
+
+        Screen('PutImage', w, Pic, [0 0 ww wh]);
+        [ons_resp, starttime] = Screen('Flip', w);
+        subj.onsets.image(i_trial,1) = starttime - subj.trigger.fin;
+
+        WaitSecs(pic_dur);
+
+        fixation = '+';
+        Screen('TextSize',w,64);
+        Screen('TextFont',w,'Arial');
+        DrawFormattedText(w, fixation, 'center', (y_cent - screen_offset_y * wh/2), [0 0 0],80);
+
+        [ons_resp, starttime] = Screen('Flip', w);
+        subj.onsets.fix1(i_trial,1) = starttime - subj.trigger.fin;
+
+        WaitSecs(min_ISI+jitter(count_jitter));
+        count_jitter = count_jitter + 1;
+
+        subj.time.scale_trigger = GetSecs;
+        subj.onsets.scales.all(i_trial,1) = subj.time.scale_trigger - subj.trigger.fin;
+        
+        if do_NF == 0
+            if design.rand.full_flip_coin(i_trial,subj.block) == 0
+                rating_type_num = 0;
+                output.rating.type_num(i_trial,1) = rating_type_num;
+                subj.onsets.scales.LHS(i_trial,1) = GetSecs - subj.trigger.fin;
+                if linux
+                    LHS_vertical_all
+                elseif do_joystick ==0 && do_gamepad == 0
+                    LHS_vertical_all
+                elseif do_joystick == 1
+                    LHS_vertical_joystick
+                elseif do_gamepad == 1
+                    LHS_vertical_gamepad
+                end
+                subj.durations.scales.LHS(i_trial,1) = GetSecs - (subj.onsets.scales.LHS(i_trial,1) + subj.trigger.fin);
+                subj.durations.scales.all(i_trial,1) = GetSecs - (subj.onsets.scales.all(i_trial,1) + subj.trigger.fin);
+
+            else
+                rating_type_num = 1;
+                output.rating.type_num(i_trial,1) = rating_type_num;
+                subj.onsets.scales.VAS(i_trial,1) = GetSecs - subj.trigger.fin;
+                if linux ||(do_joystick ==0 && do_gamepad == 0)
+                    VAS_horz_all
+                elseif do_joystick == 1
+                    VAS_horz_joystick
+                elseif do_gamepad == 1
+                    VAS_horz_gamepad
+                end
+                subj.durations.scales.VAS(i_trial,1) = GetSecs - (subj.onsets.scales.VAS(i_trial,1) + subj.trigger.fin);
+                subj.durations.scales.all(i_trial,1) = GetSecs - (subj.onsets.scales.all(i_trial,1) + subj.trigger.fin);
+            end
+        else
+            if design.rand.full_flip_coin(i_trial,NF_clmn_index) == 0
+                rating_type_num = 0;
+                output.rating.type_num(i_trial,1) = rating_type_num;
+                subj.onsets.scales.LHS(i_trial,1) = GetSecs - subj.trigger.fin;
+                if linux
+                    LHS_vertical_all
+                elseif do_joystick ==0 && do_gamepad == 0
+                    LHS_vertical_all
+                elseif do_joystick == 1
+                    LHS_vertical_joystick
+                elseif do_gamepad == 1
+                    LHS_vertical_gamepad
+                end
+                subj.durations.scales.LHS(i_trial,1) = GetSecs - (subj.onsets.scales.LHS(i_trial,1) + subj.trigger.fin);
+                subj.durations.scales.all(i_trial,1) = GetSecs - (subj.onsets.scales.all(i_trial,1) + subj.trigger.fin);
+                
+            else
+                rating_type_num = 1;
+                output.rating.type_num(i_trial,1) = rating_type_num;
+                subj.onsets.scales.VAS(i_trial,1) = GetSecs - subj.trigger.fin;
+                if linux ||(do_joystick ==0 && do_gamepad == 0)
+                    VAS_horz_all
+                elseif do_joystick == 1
+                    VAS_horz_joystick
+                elseif do_gamepad == 1
+                    VAS_horz_gamepad
+                end
+                subj.durations.scales.VAS(i_trial,1) = GetSecs - (subj.onsets.scales.VAS(i_trial,1) + subj.trigger.fin) ;
+                subj.durations.scales.all(i_trial,1) = GetSecs - (subj.onsets.scales.all(i_trial,1) + subj.trigger.fin);
+            end
+        end
+
+        fixation = '+';
+        Screen('TextSize',w,64);
+        Screen('TextFont',w,'Arial');
+        DrawFormattedText(w, fixation, 'center', (y_cent - screen_offset_y * wh/2), [0 0 0],80);
+
+        [ons_resp, starttime] = Screen('Flip', w);
+        subj.onsets.fix2(i_trial,1) = starttime - subj.trigger.fin;
+
+        if flag_resp == 1
+            WaitSecs((max_dur_rating-subj.durations.scales.all(i_trial,1))+jitter(count_jitter));
+        else
+            WaitSecs((0.5-feedback_delay)+jitter(count_jitter));
+        end
+
+        if flag_resp == 0
+%             output.rating.value(i_trial,1) = rating;
+            output.rating.label{i_trial,1} = text_freerating;
+            output.rating.subm(i_trial,1) = 0;
+            output.rating.type_num(i_trial,1) = rating_type_num;
+        end
+
+        output.version = subj.version;
+
+        if do_NF == 0
+        %put output values in output matrix
+        output.data_mat_hrzntl = [output.data_mat_hrzntl, [subj.id; ...         % subject ID
+                                 subj.sess; ...                                 % session 
+                                 subj.block; ...                                  % run number
+                                 subj.run; ...                                % block number
+                                 i_trial; ...                                   % trial number
+                                 design.rand.image_file(i_trial,subj.block);...         % image ID from design matrix
+                                 rating_type_num; ...         % scale used (0 = LHS, 1 = VAS)
+                                 output.rating.value(i_trial,1); ...            % Rating value
+                                 output.rating.subm(i_trial,1); ...             % submitted through button press (1), or time ran out (0)
+                                 subj.durations.scales.all(i_trial,1)]];        % reaction time
+        elseif do_NF == 1
+                    %put output values in output matrix
+        output.data_mat_hrzntl = [output.data_mat_hrzntl, [subj.id; ...         % subject ID
+                                 subj.sess; ...                                 % session 
+                                 subj.block; ...                                  % run number
+                                 subj.run; ...                                % block number
+                                 i_trial; ...                                   % trial number
+                                 design.rand.image_file(i_trial,NF_clmn_index);...         % image ID from design matrix
+                                 rating_type_num; ...         % scale used (0 = LHS, 1 = VAS)
+                                 output.rating.value(i_trial,1); ...            % Rating value
+                                 output.rating.subm(i_trial,1); ...             % submitted through button press (1), or time ran out (0)
+                                 subj.durations.scales.all(i_trial,1)]];        % reaction time
+        end
+        %filename = sprintf('FCR_beh_%04d_%01d_temp',subj.id, subj.sess);
+        filename = ['FCRbeh_', subj.study, '_', subj.subjectID, '_S', subj.sessionID, '_R', subj.runID, '_temp_', subj.date ];
+        save(fullfile('Backup', [filename '.mat']),'design','output','subj','time');
+
+
+        count_jitter = count_jitter + 1;
+
+    end
+    
+    if block==6
+        
+       i_timer = 1;
+        
+       timer_onset_feedback = GetSecs;
+        
+        while i_timer <= 60
+            
+            while i_timer > GetSecs - timer_onset_feedback
+
+               text = ['Sie haben jetzt die Haelfte geschafft. Sie koennen eine kleine Pause machen. \n\n\n' num2str(60 - i_timer) '    Sekunden bis zur naechsten Runde.'];
+
+               % Draw Text
+               Screen('TextSize',w,28);
+               Screen('TextFont',w,'Arial');
+               [pos.x,pos.y,pos.bbox] = DrawFormattedText(w, text, 'center', 'center', [0 0 0],150);
+               [ons_resp, starttime] = Screen('Flip', w, []);
+
+            end
+
+            i_timer = i_timer + 1;
+        end
+    end
+    
+end
+    
+
+output.data_mat = output.data_mat_hrzntl';
+
+%last fixation
+fixation = '+';
+Screen('TextSize',w,64);
+DrawFormattedText(w, fixation, 'center', (y_cent - screen_offset_y * wh/2), [0 0 0],80);
+[ons_resp, starttime] = Screen('Flip', w);
+subj.onsets.fix_fin = starttime - subj.trigger.fin;
+
+if do_fmri_flag == 1
+    WaitSecs(15-(1+jitter(count_jitter-1)));
+else
+    WaitSecs(1+jitter(count_jitter-1));
+end
+
+%subj.onsets.fix_fin = GetSecs - subj.trigger.fin;
+
+%filename = sprintf('FCR_beh_TUE002_%04d_%01d',subj.id, subj.sess);
+filename = ['FCRbeh_', subj.study, '_', subj.subjectID, '_S', subj.sessionID, '_R', subj.runID];
+save(fullfile('Data', [filename '.mat']),'design','output','subj','time');
+save(fullfile('Backup', [filename datestr(now,'_yymmdd_HHMM') '.mat']));
+
+
+
+ShowCursor();
+
+Screen('CloseAll');
+ 

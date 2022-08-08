@@ -1,0 +1,50 @@
+FCR Version 3 
+Update: July 2021
+By: Corinna Schulz
+Contact: corinna.schulz96@gmail.com
+
+FCR_all is renamed to FCR_main. Many "special cases" were removed for clarity, incl. Bedvar No-Food Runs. 
+Instead, future studies will need to create these special cases via adaptations in their unique randomization skripts.  
+
+The Output structure was simplified, as to have one main field "output.data" with another field indicating the output labels. 
+The output structure is documented in detail in the FCR_V3_readme. 
+
+The Wanting and Liking scales were simplified (Joystick and Mouse Option, the mouse option is not tested yet!).
+Further the LHS and VAS scripts within the FCR folder are now specifically for the FCR, the option as a standalone experiment was
+removed (as this did not work anyways). 
+
+Future studies that use the FCR in the scanner and reintroduce block design, need to extend the current output variable:
+%block index (relevant for MR block design)
+%block type (relevant for MR block design)
+%block id (relevant for MR block design)   
+
+Following variables were renamed: 
+* block_repetition => repetition 
+Indicate the count of all FCR-runs for one participant across all sessions, as there are at least 2 runs
+(liking and wanting) per session. Not to mixed up with the Run that is entered initially, that is "attempts" (e.g. if a trial fails/ needs to restart, in order not to owerwrite data) 
+Was named repetition elsewhere in script/ eased up 
+
+* sweet => "food_category_sweet"
+* high_caloric => "caloric_category_high"
+
+The Reaction Time is recorded now. 
+
+The Jitter file needs to be created elsewhere and the path specified in the beginning of the script. 
+
+Open to discuss/Problems/to-be-checked: 
+timing.min_ISI = 0.3; 
+# How is this determined/set? Does it fit to the current Jitter file that says something about 0.7? 
+
+# The Jitter file is not correct, needs trials*2*2 (for each fixation cross). 
+How is is Jitter created? I would like to incorporate it directly in the script. 
+
+#Are the timestamps correclty calculated? Specifically Jitter Fix 1 und Fix2 use different calculations. 
+
+WaitSecs(timing.min_ISI+jitter(count_jitter));
+timestamps.jitter_fix1(i_trial) = jitter(count_jitter);
+versus 
+jitter_duration = timing.min_ISI + jitter(count_jitter);
+WaitSecs(jitter_duration);
+timestamps.jitter_fix2(i_trial) = jitter_duration; 
+
+
