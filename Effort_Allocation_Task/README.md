@@ -71,7 +71,9 @@ experiment.exp_data	1 = experimental data
 0 = pilot data
 process_training	1 = training data is processed as well
 0 = training data is skipped
-	experiment.paradigm_number	
+	
+	experiment.paradigm_number
+	
 Save the string of the study name, example: ‘TUE005’
 
 Participants for which data is not present, are excluded automatically.
@@ -84,18 +86,30 @@ Now, some specifications are needed about the data you want to process. If you a
 Experimental or pilot data?  [0 = pilot, 1 = experimental]
 
 Training data is usually not so interesting for analysis. In case you want to look at the training data nevertheless, you can specify that now.
-Process training data?  [0 = no, 1 = yes]
-Now, the probably most important question follows. From which study do you process data? Your answer MUST have the following structure: TUE<study-nr> with <study-nr> has a length of 3, in the end is the study identifier and the beginning is padded with zeros. Enter without any extra signs (space, apostrophe, etc).
-Please enter the paradigm number. [example: TUE004]
+
+	Process training data?  [0 = no, 1 = yes]
+	
+Now, the probably most important question follows. From which study do you process data? Your answer MUST have the following structure: 
+	TUE<study-nr> with <study-nr> has a length of 3, in the end is the study identifier and the beginning is padded with zeros. Enter without any extra signs (space, apostrophe, etc).
+	
+	Please enter the paradigm number. [example: TUE004]
+	
 All participants of whom data is missing are excluded automatically. If only one session of many exist, the processing script can handle that. In case you have other reasons for exclusion, please enter that now.
-Do you want to exclude participants from processing? [0 = no, 1 = yes]
-After answering with 1, you can type the subject IDs that you want to exclude. Be careful! It must be written in a specific style. [ID1, ID2, ID3, …, IDN]
-Which participant do you want to exclude? (Format: [id1,id2,...,idn])
+	
+	Do you want to exclude participants from processing? [0 = no, 1 = yes]
+	
+After answering with 1, you can type the subject IDs that you want to exclude. 
+Be careful! It must be written in a specific style. [ID1, ID2, ID3, …, IDN]
+	
+	Which participant do you want to exclude? (Format: [id1,id2,...,idn])
+	
 In case the bracket format does not work for you, you can also enter single numbers (for example: 5). After every answer you see the question:
 Do you want to exclude further participants from analysis? [0 = no, 1 = yes]
 You can answer with 1 and enter all participants numbers you want to exclude one by one. If you are done, answer 0.
 After that, you are done and you can see the confirmation:
-Settings saved
+	
+	Settings saved
+
 Settings are saved in 
 TUE_general/Tasks/Effort/Analyses/<study>
  
@@ -158,15 +172,21 @@ An important value is the sum of all first derivatives over the sliding window C
 Two main processes are used to recognize the start of a new segment:
 1.	Look at the big picture if new segment is possible
 l. 355		- main condition that change to work is likely
-		if COM10D1F > multiplicator * STD
+	
+	if COM10D1F > multiplicator * STD
+	
 		all other conditions optimize runtime or check special cases
 l. 427		- main condition that change to rest is likely
-		if COM10D1F < - multiplicator * STD
+	
+	if COM10D1F < - multiplicator * STD
+		       
 all other conditions optimize runtime or check special cases
 l. 404	- for the beginning of the trial: special condition in case that the participant does not start with rest (default setting)
 If nothing of this happens, continue last segment.
 If the change to a new segment is likely, set two Booleans to 1:
-(Work_Ons and Work_Prog) or (Rest_Ons and Rest_Prog)
+		       
+		       (Work_Ons and Work_Prog) or (Rest_Ons and Rest_Prog)
+		       
 The Ons(et) variables save the following: after a change to a new segment is likely, we want to know where exactly the new segment starts (T_Work/T_Rest) Until this exact starting point was found, this variable stays at value 1.
 The Prog(ress) variables save the following: after a change to a new segment is likely and still after the time point was found, we wait with the change to the new segment until the threshold of 50% was reached. Thus, if this time point is reached, we set backwards the new segment (beginning with T_Work/T_Rest) until the current time point. If no new changes are recognized, this new segment continues automatically (see above: “If nothing of this happens, continue last segment.)
 2.	Check details if a new segment really starts
