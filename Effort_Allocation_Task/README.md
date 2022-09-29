@@ -71,7 +71,8 @@ experiment.exp_data	1 = experimental data
 0 = pilot data
 process_training	1 = training data is processed as well
 0 = training data is skipped
-experiment.paradigm_number	Save the string of the study name, example: ‘TUE005’
+	experiment.paradigm_number	
+Save the string of the study name, example: ‘TUE005’
 
 Participants for which data is not present, are excluded automatically.
 If you want to exclude other participants, you can do that in l. 252.
