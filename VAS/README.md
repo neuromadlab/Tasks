@@ -15,7 +15,7 @@ TP3: after the stimulation at the end of the experiment
 
 ## 4.	Question Index 
 ![image](https://user-images.githubusercontent.com/50832722/193066595-8702b8e4-438f-46bb-b36a-6caa976d902a.png)
-![image](https://user-images.githubusercontent.com/50832722/193066647-0ad5fab8-0497-4703-b3e6-4ead197cbc33.png)
+![image](https://user-images.githubusercontent.com/50832722/193066935-8353fb62-adc3-424c-a2da-23455b1699ab.png)
 
 ## 5.	Rating 
 Participants rating of the question coded as -100 to +100
