@@ -187,6 +187,7 @@ If the change to a new segment is likely, set two Booleans to 1:
 		       
 		       (Work_Ons and Work_Prog) 
 or 
+		      
 		       (Rest_Ons and Rest_Prog)
 		       
 The Ons(et) variables save the following: after a change to a new segment is likely, we want to know where exactly the new segment starts (T_Work/T_Rest) Until this exact starting point was found, this variable stays at value 1.
