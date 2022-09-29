@@ -233,9 +233,8 @@ ll. 170 – 258
 		       T_Work/T_Rest 
 is searched: if next time stamps in sliding window are all larger/smaller than the current time point, change the row as time point of segment start
 ll. 259 – 345	- after time point was found, wait until 50% threshold and set the segment backwards
-
-		       ![image](https://user-images.githubusercontent.com/50832722/193056023-2ec6f0d4-1b46-4f64-9484-75acf4253397.png)
-		       ![image](https://user-images.githubusercontent.com/50832722/193056067-4b1d19ec-d5d0-4a27-9337-aa9f5458ae09.png)
-		       ![image](https://user-images.githubusercontent.com/50832722/193056096-30b3cefe-781f-4bda-8fbc-8e23f234af54.png)
+![image](https://user-images.githubusercontent.com/50832722/193056023-2ec6f0d4-1b46-4f64-9484-75acf4253397.png)
+![image](https://user-images.githubusercontent.com/50832722/193056067-4b1d19ec-d5d0-4a27-9337-aa9f5458ae09.png)
+![image](https://user-images.githubusercontent.com/50832722/193056096-30b3cefe-781f-4bda-8fbc-8e23f234af54.png)
 
 
