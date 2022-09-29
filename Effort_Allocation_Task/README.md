@@ -185,7 +185,9 @@ l. 404	- for the beginning of the trial: special condition in case that the part
 If nothing of this happens, continue last segment.
 If the change to a new segment is likely, set two Booleans to 1:
 		       
-		       (Work_Ons and Work_Prog) or (Rest_Ons and Rest_Prog)
+		       (Work_Ons and Work_Prog) 
+or 
+		       (Rest_Ons and Rest_Prog)
 		       
 The Ons(et) variables save the following: after a change to a new segment is likely, we want to know where exactly the new segment starts (T_Work/T_Rest) Until this exact starting point was found, this variable stays at value 1.
 The Prog(ress) variables save the following: after a change to a new segment is likely and still after the time point was found, we wait with the change to the new segment until the threshold of 50% was reached. Thus, if this time point is reached, we set backwards the new segment (beginning with T_Work/T_Rest) until the current time point. If no new changes are recognized, this new segment continues automatically (see above: “If nothing of this happens, continue last segment.)
