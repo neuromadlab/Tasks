@@ -163,23 +163,111 @@ for runLabel = runLabel_start:2
                     
                     output.default = ones(height(output.values_per_trial_table),1);
                     
-                    if exist('group_vec','var')
+                    if exist('group_vec','var') || exist('cond_table','var')
+                        
+                        
+                        if istable(cond_table) %longformat datatable one row per session with columns for all within (_cond) factors and between (_group) factors
+                            
+                            
+                            %test wether there are also variables for group
+                            %assignments (e.g., MDD)
+                            
+                            conditions = strfind(string(cond_table.Properties.VariableNames),'_group');
+                            idx_cond = find(~cellfun(@isempty,conditions));
+                            
+                            if ~isempty(idx_cond)
+                                
+                                for i_cond = 1:length(idx_cond)
+                                    
+                                    group_name = strsplit(cond_table.Properties.VariableNames{idx_cond(i_cond)},'_');
+                                    
+                                    output.values_per_trial_table = addvars(output.values_per_trial_table, output.default, 'NewVariableNames', {[group_name{1},'Group']});
+                                    
+                                    %value of the current condition column for
+                                    %the current ID and session number
+                                    output.StimCond_var = cond_table{cond_table.ID==output.values_per_trial_table.Subj_ID(1)&cond_table.Session==output.values_per_trial_table.Sess_ID(1),idx_cond(i_cond)};
+                                    
+                                    output.values_per_trial_table{:,end} = output.values_per_trial_table{:,end} * output.StimCond_var;
+                              
+                                    
+                                end
+                                
+                                
+                            end
+                        
+                        elseif isvector(group_vec)
                         output.values_per_trial_table = addvars(output.values_per_trial_table, output.default, 'NewVariableNames', 'Group');
                         
                         % map the subject ID from the group vector onto the subject ID from the output data
                         output.group_var = group_vec((group_vec(:,1) == output.values_per_trial_table.Subj_ID(1)),2);
                         output.values_per_trial_table.Group = output.values_per_trial_table.Group * output.group_var;
+                    
+                        end
                     end
                     
                     if exist('cond','var')
-                        output.values_per_trial_table = addvars(output.values_per_trial_table, output.default, 'NewVariableNames', 'StimCond');
                         
-                        % 2nd column: condition in 1st session
-                        % 3rd column: condition in 2nd session
-                        output.StimCond_var = cond((cond(:,1) == output.values_per_trial_table.Subj_ID(1)), ...    % row (subject)
-                            output.values_per_trial_table.Sess_ID(1) + 1);                                              % column (session)
+                        if istable(cond_table) %longformat datatable one row per session with columns for all within (_cond) factors and between (_group) factors
+                            
+                            %find number and names fo conditions (e.g., stim, caloric etc. Variable ending on _cond)
+                            conditions = strfind(string(cond_table.Properties.VariableNames),'_cond');
+                            idx_cond = find(~cellfun(@isempty,conditions));
+                            
+                            %loop through within participant conditions
+                            for i_cond = 1:length(idx_cond)
+                                
+                                cond_name = strsplit(cond_table.Properties.VariableNames{idx_cond(i_cond)},'_'); 
+                                
+                                output.values_per_trial_table = addvars(output.values_per_trial_table, output.default, 'NewVariableNames', {[cond_name{1},'Cond']});
+                                
+                                %value of the current condition column for
+                                %the current ID and session number
+                                output.StimCond_var = cond_table{cond_table.ID==output.values_per_trial_table.Subj_ID(1)&cond_table.Session==output.values_per_trial_table.Sess_ID(1),idx_cond(i_cond)};
+                                
+                                output.values_per_trial_table{:,end} = output.values_per_trial_table{:,end} * output.StimCond_var;
+                                
+                                
+                            end
+                            
+                            %test wether there are also variables for group
+                            %assignments (e.g., MDD)
+                            
+%                             conditions = strfind(string(cond_table.Properties.VariableNames),'_group');
+%                             idx_cond = find(~cellfun(@isempty,conditions));
+%                             
+%                             if ~isempty(idx_cond)
+%                                 
+%                                 for i_cond = 1:length(idx_cond)
+%                                     
+%                                     group_name = strsplit(cond_table.Properties.VariableNames{idx_cond(i_cond)},'_');
+%                                     
+%                                     output.values_per_trial_table = addvars(output.values_per_trial_table, output.default, 'NewVariableNames', {[cond_name{1},'Group']});
+%                                     
+%                                     %value of the current condition column for
+%                                     %the current ID and session number
+%                                     output.StimCond_var = cond_table{cond_table.ID==output.values_per_trial_table.Subj_ID(1)&cond_table.Session==output.values_per_trial_table.Sess_ID(1),idx_cond(i_cond)};
+%                                     
+%                                     output.values_per_trial_table.StimCond = output.values_per_trial_table.StimCond * output.StimCond_var;
+%                                     
+%                                     
+%                                 end
+%                                 
+%                                 
+%                             end
+                                                       
+                        elseif ismatrix('cond')
+                            
+                            output.values_per_trial_table = addvars(output.values_per_trial_table, output.default, 'NewVariableNames', 'StimCond');
+                            
+                            % 2nd column: condition in 1st session
+                            % 3rd column: condition in 2nd session
+                            output.StimCond_var = cond((cond(:,1) == output.values_per_trial_table.Subj_ID(1)), ...    % row (subject)
+                                output.values_per_trial_table.Sess_ID(1) + 1);                                              % column (session)
+                            
+                            output.values_per_trial_table.StimCond = output.values_per_trial_table.StimCond * output.StimCond_var;
+                            
+                        end
                         
-                        output.values_per_trial_table.StimCond = output.values_per_trial_table.StimCond * output.StimCond_var;
                     else
                         disp('No stimulus conditions found. Is that correct?')
                         disp('')
@@ -272,7 +360,7 @@ for runLabel = runLabel_start:2
                             output.r_exh = true;
                             output.values_per_trial_table = addvars(output.values_per_trial_table, output.default, 'NewVariableNames', 'R_Exh');
                             
-                            output.VAS(:,1) = [1:experiment.trialnums(runLabel)];
+                            output.VAS(:,1) = [1:experiment.trialnums(i_sess,runLabel)];
                             output.VAS(:,2) = transpose(output.rating_exhaustion);
                         end
                         
@@ -280,7 +368,7 @@ for runLabel = runLabel_start:2
                             output.r_want = true;
                             output.values_per_trial_table = addvars(output.values_per_trial_table, output.default, 'NewVariableNames', 'R_Want');
                             
-                            output.VAS(:,1) = [1:experiment.trialnums(runLabel)];
+                            output.VAS(:,1) = [1:experiment.trialnums(i_sess,runLabel)];
                             output.VAS(:,3) = transpose(output.rating_wanting);
                         end
                         
@@ -288,7 +376,7 @@ for runLabel = runLabel_start:2
                             output.r_hap1 = true;
                             output.values_per_trial_table = addvars(output.values_per_trial_table, output.default, 'NewVariableNames', 'R_Hap1');
                             
-                            output.VAS(:,1) = [1:experiment.trialnums(runLabel)];
+                            output.VAS(:,1) = [1:experiment.trialnums(i_sess,runLabel)];
                             output.VAS(:,4) = transpose(output.rating_happy);
                         end
                         
@@ -296,13 +384,13 @@ for runLabel = runLabel_start:2
                             output.r_hap2 = true;
                             output.values_per_trial_table = addvars(output.values_per_trial_table, output.default, 'NewVariableNames', 'R_Hap2');
                             
-                            output.VAS(:,1) = [1:experiment.trialnums(runLabel)];
+                            output.VAS(:,1) = [1:experiment.trialnums(i_sess,runLabel)];
                             output.VAS(:,5) = transpose(output.rating_happy2);
                         end                        
                     end
                     
                     if isfield(output, 'VAS')
-                        for i_trial = 1:experiment.trialnums(runLabel)
+                        for i_trial = 1:experiment.trialnums(i_sess,runLabel)
                             
                             % read out VAS per trial
                             output.VAS_trial = output.VAS(output.VAS(:,1) == i_trial,:);
