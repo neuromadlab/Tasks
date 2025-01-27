@@ -19,7 +19,7 @@ The participant learns the tone-reward associations as they are repeatedly paire
 The task as it will be during the experiment is practiced (see Figure 1; cue phase, signal tone, bidding phase, and feedback). In addition, participants receive feedback whether their trial was valid (i.e., they pressed after the end of the signal tone) or invalid (i.e., they pressed before the end of the signal tone (threshold of set force is exceeded)). 
 
 The **Experiment** Mode reminds the participant of the learned tone-cue associations and follows for each trial the following order: 
-![image](Instrumental_Motivation_Task/Documentation/IMT_Trial.png)
+![image](https://github.com/neuromadlab/Tasks/blob/4bcd566cc76490850d9dde8a0fe58321330e05ea/Instrumental_Motivation_Task/Documentation/IMT_Trial.png) 
 
 
 ## Script description 
