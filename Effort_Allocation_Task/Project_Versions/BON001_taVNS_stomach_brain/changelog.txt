@@ -1,0 +1,22 @@
+17.07.2024
+HideCursor() disabled, because the cursor is needed on the second screen.
+
+18.07.2024
+in Part 5: Load required files:
+the maxeffort_searchname in case of using the gamepad is not fixed to session 1 anymore, but uses the actual choosen session.
+
+instruction "vas_nr1" is too long, splitted it, added "vas_nr2" to the settings-struct of session 3.
+
+after the last instruction "instr.time_exp", now continue to task with button (participant) not by mouseclick (experimenter) anymore.
+
+26.07.2024
+instruction "vas_nr1" is too long, splitted it, added "vas_nr2" to the settings-struct of session 1-6.
+
+13.08.2024
+added previous changes to original script. HideCursor is no enabled for session 1 & 2 only, maxeffort_searchname in part 5 is fixed to session 3
+as no training will be done in sessions 4 to 6, instruction vas_nr1 and vas_nr2 is splitted for settings-struct of session 3-6; last instruction
+continues with buttonpress by the participant for all do_fmri == 0 sessions
+
+22.08.2024
+specified tvns duration and pause duration in the beginning dependent on condition (low intensity: 1 s stimulation, 51 s pause;
+ high intensity: 22 s stimulation, 30 s pause) and added stimDur & pauseDur as inputs for setupTVNS function
