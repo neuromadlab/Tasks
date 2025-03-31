@@ -22,7 +22,7 @@
     %--- Prepare off-screen windows---
     
     %rating window (4s)
-    rating_scr = Screen('OpenOffscreenwindow',w,color_scale_background);
+    rating_scr = Screen('OpenOffscreenwindow',w,color_scale_background_grey);
     text_freerating = [trial.question]; %free rating
     
     % Screen('TextSize',rating_scr,14); %Commented out so that the text

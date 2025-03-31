@@ -14,8 +14,8 @@ if 7~=exist('./Backup','dir')
 	mkdir('./Backup')
 end
 
-if 7~=exist('./Data','dir')
-	mkdir('./Data')
+if 7~=exist('./data','dir')
+	mkdir('./data')
 end
 
 %% General settings:
@@ -96,20 +96,22 @@ screenNumber = max(screens);
 % Automatic operating information
 Screen('Preference', 'SkipSyncTests', 1);
 
-
+%setup.do_eyetracking = 1;
 
 do_eyetracking = setup.do_eyetracking;
+
 
 if do_eyetracking == 1
 % Set up Eyetracking Toby (or eyelink)
 DEBUGlevel              = 0;
 fixClrs                 = [0 255];
+scr                     = max(Screen('Screens'));
 bgClr                   = 127;
 useAnimatedCalibration  = true;
 doBimonocularCalibration= false;
 
     % get setup struct (can edit that of course):
-    settings = Titta.getDefaults('Tobii Pro Spectrum');
+    settings = Titta.getDefaults('Tobii Pro Fusion');
     % request some debug output to command window, can skip for normal use
     settings.debugMode      = true;
     % customize colors of setup and calibration interface (colors of
@@ -200,12 +202,15 @@ doBimonocularCalibration= false;
         end
     else
         % do binocular calibration
+        disp('Calibration starts, press space bar in about 10 seconds/ask participant to let you know when they are done')
         tobii.calVal{1}         = EThndl.calibrate(wpnt);
     end
     ListenChar(0);
     
     %end setup
 end    
+
+
 
 %%  Set task parameters
 
@@ -288,21 +293,12 @@ WaitSecs(3)
 % =========================================================================
 
  fixation = '+';
-  Screen('TextSize',w,64);
+  Screen('TextSize',w,96);
   DrawFormattedText(w, fixation, 'center', (y_cent - screen_offset_y * wh/2), [0 0 0],80);
 
   [ons_resp, starttime] = Screen('Flip', w);
 
 
-if setup.do_eyetracking == 1
-% Start eyetracking
-EThndl.buffer.start('gaze');
-WaitSecs(.8);   % wait for eye tracker to start and gaze to be picked up
-
-% send message into ET data file
-timestamps.exp_on = GetSecs;
-EThndl.sendMessage('Start of experiment',timestamps.exp_on);
-end
      
 %setup some of the http requests
 
@@ -330,7 +326,20 @@ request_stimulationoff = matlab.net.http.RequestMessage(method,[],body_stimulati
 
 count_trial = 1;
 for i_block = start_block:length(setup.randomization.block_id(setup.randomization.run_id==subj.run))
-    
+    %Record eyetracking for every block separately, in case we have to
+    %restart the experiment
+    if setup.do_eyetracking == 1
+        % Start eyetracking
+        EThndl.buffer.start('gaze');
+        WaitSecs(.8);   % wait for eye tracker to start and gaze to be picked up
+
+        % send message into ET data file
+        timestamps.exp_on = GetSecs;
+        EThndl.sendMessage('Start of experiment',timestamps.exp_on);
+    end
+
+
+
   %read out stimulation length for this block
   stim_length = randomization_run.Stim_length(i_block) - .21; %substract average time bluetooth signal needs (if nothing else is running in the background!!)
 
@@ -378,7 +387,7 @@ for i_block = start_block:length(setup.randomization.block_id(setup.randomizatio
 
 
   fixation = '+';
-  Screen('TextSize',w,64);
+  Screen('TextSize',w,96);
   DrawFormattedText(w, fixation, 'center', (y_cent - screen_offset_y * wh/2), [0 0 0],80);
 
   [ons_resp, starttime] = Screen('Flip', w);
@@ -392,7 +401,7 @@ for i_block = start_block:length(setup.randomization.block_id(setup.randomizatio
         time_stim_on = GetSecs;
         
         if setup.do_eyetracking ==1
-            EThndl.sendMessage(['StimON_block-',num2str(i_block),'_trial-',num2str(i_trial)],time_stim_on);
+            EThndl.sendMessage(['StimON_block-',num2str(i_block),'_trial-',num2str(i_trials)],time_stim_on);
         end
         
         time_stim_off = GetSecs;
@@ -407,7 +416,7 @@ for i_block = start_block:length(setup.randomization.block_id(setup.randomizatio
         time_stim_off = GetSecs; %get actual time stimulation was off
 
         if setup.do_eyetracking ==1
-            EThndl.sendMessage(['StimOFF_block-',num2str(i_block),'_trial-',num2str(i_trial)],time_now);
+            EThndl.sendMessage(['StimOFF_block-',num2str(i_block),'_trial-',num2str(i_trials)],time_stim_off);
         end
         
         time_now = GetSecs;
@@ -435,6 +444,7 @@ for i_block = start_block:length(setup.randomization.block_id(setup.randomizatio
   %stop treatment
   [r,~,~] = send(request_treatmentoff,'http://localhost:51523/tvnsmanager/');
   disp(['End Block: ',num2str(i_block)])
+  disp('Click on the screen / matlab window so that the participant can answer')
   
   %% Show rating scale
   %Intensity for the last block (all trials with the same 
@@ -445,7 +455,7 @@ for i_block = start_block:length(setup.randomization.block_id(setup.randomizatio
   VAS_horz
 
   fixation = '+';
-  Screen('TextSize',w,64);
+  Screen('TextSize',w,96);
   DrawFormattedText(w, fixation, 'center', (y_cent - screen_offset_y * wh/2), [0 0 0],80);
 
   [ons_resp, starttime] = Screen('Flip', w);
@@ -455,6 +465,26 @@ for i_block = start_block:length(setup.randomization.block_id(setup.randomizatio
   if i_block < length(randomization_run.Stim_length)
   disp(['Change stimulation frequency to: ',num2str(randomization_run.frequency(i_block+1)),' Confirm only when done and taVNS manager reconnected by pressing 5'])
   end
+  
+  if setup.do_eyetracking == 1
+
+      % stop recording
+      if EThndl.buffer.hasStream('eyeImage')
+          EThndl.buffer.stop('eyeImage');
+      end
+      EThndl.buffer.stop('gaze');
+
+      % save data to mat file, adding info about the experiment
+      dat = EThndl.collectSessionData();
+      dat.expt.winRect = winRect;
+      filename = ['Pupil_OpttaVNS_', subj.study, '_', subj.subjectID, '_S', subj.sessionID, '_R', subj.runID,'_B',num2str(i_block)];
+      %    dat.expt.stimDir = stimDir;
+      save(EThndl.getFileName(fullfile('data', [filename '.mat']), true),'-struct','dat');
+      % NB: if you don't want to add anything to the saved data, you can use
+      % EThndl.saveData directly
+
+
+  end
 
   filename = ['OpttaVNS_', subj.study, '_', subj.subjectID, '_S', subj.sessionID, '_R', subj.runID, '_temp_', subj.date ];
   save(fullfile('Backup', [filename '.mat']),'output','subj');
@@ -463,32 +493,35 @@ end
 
 %last fixation
 fixation = '+';
-Screen('TextSize',w,64);
+Screen('TextSize',w,96);
 DrawFormattedText(w, fixation, 'center', (y_cent - screen_offset_y * wh/2), [0 0 0],80);
 
 [ons_resp, starttime] = Screen('Flip', w);
 timestamps.fix_fin = starttime;
 
 
-if setup.do_eyetracking == 1
-    % stop recording
-    if EThndl.buffer.hasStream('eyeImage')
-        EThndl.buffer.stop('eyeImage');
-    end
-    EThndl.buffer.stop('gaze');
-
-    % save data to mat file, adding info about the experiment
-    dat = EThndl.collectSessionData();
-    dat.expt.winRect = winRect;
-    dat.expt.stimDir = stimDir;
-    save(EThndl.getFileName(fullfile(cd,'t'), true),'-struct','dat');
-    % NB: if you don't want to add anything to the saved data, you can use
-    % EThndl.saveData directly
-
-    % shut down
-    EThndl.deInit();
-
-end
+% if setup.do_eyetracking == 1
+%     try
+%     % stop recording
+%     if EThndl.buffer.hasStream('eyeImage')
+%         EThndl.buffer.stop('eyeImage');
+%     end
+%     EThndl.buffer.stop('gaze');
+% 
+%     % save data to mat file, adding info about the experiment
+%     dat = EThndl.collectSessionData();
+%     dat.expt.winRect = winRect;
+%     filename = ['Pupil_OpttaVNS_', subj.study, '_', subj.subjectID, '_S', subj.sessionID, '_R', subj.runID];
+% %    dat.expt.stimDir = stimDir;
+%     save(EThndl.getFileName(fullfile('data', [filename '.mat']), true),'-struct','dat');
+%     % NB: if you don't want to add anything to the saved data, you can use
+%     % EThndl.saveData directly
+%     catch
+%     end
+%     % shut down
+%     EThndl.deInit();
+% 
+% end
 
 %Save time end of experiment
 subj.date_end      = datestr(now);
@@ -498,11 +531,8 @@ subj.length_exp = etime(t_end, t_start)/60; %length exp in min
 
 % Save output
 filename = ['OpttaVNS_', subj.study, '_', subj.subjectID, '_S', subj.sessionID, '_R', subj.runID];
-if settings.do_fmri == 0
-    save(fullfile('Data', [filename '.mat']),'output','subj','timestamps');
-else
-    save(fullfile('Data', [filename '.mat']),'output','subj','input_device','timestamps','MR_timings');
-end
+save(fullfile('data', [filename '.mat']),'output','subj','timestamps');
+
 
 save(fullfile('Backup', [filename datestr(now,'_yymmdd_HHMM') '.mat']));
 
