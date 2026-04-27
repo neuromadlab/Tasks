@@ -1,0 +1,15 @@
+food_ratings = [
+[114, ['liking', 81.51169900170449], ['wanting', 23.563763378846524], ['sustainability', 68.64346741425871], ['healthiness', 72.78645682816554]], 
+[337, ['wanting', 27.361504929234282], ['sustainability', 31.257891414141415], ['liking', 67.91418293417195], ['healthiness', 67.90364733850113]]
+]
+
+
+// sorted subarrays
+food_ratings = [
+  [114,
+ ['healthiness', 72.78645682816554], ['liking', 81.51169900170449],
+ ['sustainability', 68.64346741425871], ['wanting', 23.563763378846524]],
+  [337,
+ ['healthiness', 67.90364733850113], ['liking', 67.91418293417195],
+ ['sustainability', 31.257891414141415], ['wanting', 27.361504929234282]]
+];
